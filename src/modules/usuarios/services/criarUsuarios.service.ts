@@ -4,24 +4,24 @@ import { criarUsuarioRepository } from "../repositories/criarUsuario.repository.
 
 export async function criarUsuariosService(dados: CriarUsuarioDto): Promise<void> {
     
-    if(!dados.nome.trim()) {
-        throw new Error("Nome inválido, tente novamente.")
+    if(!dados.nome.trim() ) {
+        throw new Error("Nome inválido, tente novamente.");
+    };
+
+    if(!["admin", "gerente", "colaborador"].includes(dados.tipo)) {
+        throw new Error("Tipo inválido, tente novamente.");
     }
 
-    if(!dados.tipo){
-        throw new Error("Tipo não informado.")
+    if(!dados.email.trim() && dados.email.includes("@")) {
+        throw new Error("E-mail inválido, tente novamente.");
     }
 
-    if(!dados.email.trim()){
-        throw new Error("E-mail não informado.")
+    if(!["ativo","inativo"].includes(dados.status)) {
+        throw new Error("Status inválido, tente novamente.");
     }
 
-    if(!dados.status){
-        throw new Error("Status do usuário não informado.");
-    }
-
-    if(!dados.senha){
-        throw new Error("Senha não informada.");
+    if(!dados.senha.trim()) {
+        throw new Error("Senha inválida, tente novamente.");
     }
 
 
