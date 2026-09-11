@@ -10,7 +10,7 @@ export function criarClienteRepository(dados: criarClienteDTO): Promise<void> {
         dados.nome,
         dados.email,
         dados.telefone,
-        dados.status,
+        "ativo",
         dados.senha
     ];
 

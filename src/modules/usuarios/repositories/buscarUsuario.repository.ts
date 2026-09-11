@@ -6,7 +6,7 @@ export function buscarUsuarioRepository(empresa_id: number, id: number): Promise
     const sql = "SELECT * FROM USUARIOS WHERE empresa_id = ? AND id = ?";
 
     return new Promise<UsuarioDto>((resolve, reject) => {
-        db.get<UsuarioDto>(sql, (erro, usuario) => {
+        db.get<UsuarioDto>(sql, [empresa_id, id], (erro, usuario) => {
             if(erro) {
                 return reject(new Error("Buscar Repository Error: "+ erro));
             }

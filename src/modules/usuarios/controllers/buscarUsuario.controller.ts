@@ -1,18 +1,16 @@
 import type { Request, Response } from "express";
 import { buscarUsuarioService } from "../services/buscarUsuario.service.js";
-import type { UsuarioDto } from "../dtos/interfacesUsuario.js";
-
 
 export async function buscarUsuarioController(req: Request, res: Response) {
     
     try {
 
-        const {empresa_id, id} = req.body;
-
-        await buscarUsuarioService(empresa_id, id);
+        const { empresa_id } = req.body;
+        const id = Number(req.params.id);
 
         res.status(200).json({
-            mensagem: "Listando usuarios..."
+            mensagem: "Listando usuarios...",
+            dados: await buscarUsuarioService(empresa_id, id)
         })
         
     } catch (error) {

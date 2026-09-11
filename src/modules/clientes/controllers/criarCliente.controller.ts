@@ -5,11 +5,9 @@ import { criarClienteService } from "../services/criarCliente.service.js";
 export async function criarClienteController(req: Request, res: Response) {
     try {
 
-        const { empresa_id, nome, email, telefone, status } = req.body;
+        /* colocar o req.usuario_id.params para criar cliente */
 
-        const novoCliente: criarClienteDTO = {
-            empresa_id, nome, email, telefone, status
-        }
+        const novoCliente: criarClienteDTO = req.body;
 
         await criarClienteService(novoCliente);
 

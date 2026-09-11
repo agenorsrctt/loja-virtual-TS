@@ -8,10 +8,11 @@ export async function listarUsuariosController(req: Request, res: Response) {
 
         const {empresa_id} = req.body;
 
-        await listarUsuariosService(empresa_id);
+        const lista = await listarUsuariosService(empresa_id)
 
         res.status(200).json({
-            mensagem: "Listando Usuarios"
+            mensagem: "Listando Usuarios",
+            dados: lista
         })
 
     } catch (error) {

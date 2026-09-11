@@ -2,7 +2,7 @@ import type { Request, Response } from "express";
 import { criarUsuariosService } from "../services/criarUsuarios.service.js";
 
 
-export async function criarUsuarioController(req: Request, res:  Response) {
+export async function criarUsuarioController(req: Request, res: Response) {
     try {
 
         const usuarioCriado = await criarUsuariosService(req.body);
@@ -13,8 +13,8 @@ export async function criarUsuarioController(req: Request, res:  Response) {
         })
 
     } catch (error) {
-        
-        if(error instanceof Error) {
+
+        if (error instanceof Error) {
             res.status(500).json({
                 mensagem: "Erro do servidor" + error
             })

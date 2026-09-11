@@ -5,8 +5,8 @@ import { buscarUsuarioController } from "../controllers/buscarUsuario.controller
 
 const routerUsuario = express.Router();
 
-routerUsuario.get("/", buscarUsuarioController);
-routerUsuario.get("/:id", listarUsuariosController);
+routerUsuario.get("/", listarUsuariosController);
+routerUsuario.get("/:id", buscarUsuarioController);
 routerUsuario.post("/", criarUsuarioController);
 
 export default routerUsuario;
