@@ -2,7 +2,7 @@ import type { AlterarUsuarioDto } from "../dtos/interfacesUsuario.js";
 import { alterarUsuarioRepository } from "../repositories/alterarUsuario.repository.js";
 
 
-export async function alterarUsuarioService(dados: AlterarUsuarioDto): Promise<void> {
+export async function alterarUsuarioService(dados: AlterarUsuarioDto, empresa_id: number, id: number): Promise<void> {
     if(dados.nome !== undefined && !dados.nome.trim() ) {
         throw new Error("Nome inválido, tente novamente.");
     };
