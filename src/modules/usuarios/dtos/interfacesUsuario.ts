@@ -5,7 +5,6 @@ export interface CriarUsuarioDto {
     nome: string;
     tipo: Tipo;
     email: string;
-    status: Status;
     senha: string;
     primeiroAcesso: PrimeiroAcesso;
 }

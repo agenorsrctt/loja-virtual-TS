@@ -1,7 +1,7 @@
 import db from "../../../database/connection.js";
 import type { UsuarioDto } from "../dtos/interfacesUsuario.js";
 
-export function listarUsuarioRepository(): Promise<UsuarioDto[]>{
+export function listarUsuarioRepository(empresa_id: number): Promise<UsuarioDto[]>{
 
     const sql = "SELECT * FROM USUARIOS WHERE empresa_id = ?";
 

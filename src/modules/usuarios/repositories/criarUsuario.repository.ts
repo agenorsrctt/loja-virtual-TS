@@ -3,7 +3,7 @@ import type { CriarUsuarioDto } from "../dtos/interfacesUsuario.js";
 
 export function criarUsuarioRepository(dados: CriarUsuarioDto): Promise<void> {
 
-    const sql = "INSERT INTO USUARIOS(empresa_id, nome, tipo, email, status) (?, ?, ?, ?, ?)";
+    const sql = "INSERT INTO USUARIOS(empresa_id, nome, tipo, email, status, senha) VALUES(?, ?, ?, ?, ?, ?)";
 
     const valores: (string | number)[] = [
         dados.empresa_id,

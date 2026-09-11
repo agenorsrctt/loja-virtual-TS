@@ -1,4 +1,5 @@
 import type { AlterarUsuarioDto } from "../dtos/interfacesUsuario.js";
+import { alterarUsuarioRepository } from "../repositories/alterarUsuario.repository.js";
 
 
 export async function alterarUsuarioService(dados: AlterarUsuarioDto): Promise<void> {
@@ -21,4 +22,6 @@ export async function alterarUsuarioService(dados: AlterarUsuarioDto): Promise<v
     if(dados.senha !== undefined && !dados.senha.trim()) {
         throw new Error("Senha inválida, tente novamente.");
     }
+
+    return await alterarUsuarioRepository(dados, dados.empresa_id, dados.id);
 }

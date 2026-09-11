@@ -1,8 +1,8 @@
 import db from "../../../database/connection.js";
 
-export function invativarUsuariosRepository(id: number): Promise<void> {
+export function invativarUsuariosRepository(empresa_id: number, id: number): Promise<void> {
 
-    const sql = "UPDATE USUARIOS SET status = inativo";
+    const sql = "UPDATE USUARIOS SET status = inativo WHERE empresa_id = ? AND id = ?";
 
     return new Promise<void>((resolve, reject) => {
         db.run(sql, function (erro) {
