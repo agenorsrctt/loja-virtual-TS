@@ -1,7 +1,7 @@
 import express from 'express';
 import './database/init.js'
 import empresaRouter from './modules/empresas/routes/empresaRouter.js';
-import clienteRouter from './modules/clientes/cliente.route.js';
+import clienteRouter from './modules/clientes/routes/routersCliente.route.js';
 
 const app = express();
 app.use(express.json());

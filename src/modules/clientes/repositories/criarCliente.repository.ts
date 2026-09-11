@@ -1,5 +1,5 @@
-import type { criarClienteDTO } from "./cliente.dto.js";
-import db from "../../database/connection.js";
+import type { criarClienteDTO } from "../dtos/interfacesCliente.dto.js";
+import db from "../../../database/connection.js";
 
 export function criarClienteRepository(dados: criarClienteDTO): Promise<void> {
 
@@ -10,7 +10,8 @@ export function criarClienteRepository(dados: criarClienteDTO): Promise<void> {
         dados.nome,
         dados.email,
         dados.telefone,
-        dados.status
+        dados.status,
+        dados.senha
     ];
 
     return new Promise<void>((resolve, reject) => {

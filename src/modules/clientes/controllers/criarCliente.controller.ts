@@ -1,6 +1,6 @@
 import type { Response, Request } from "express";
-import type { criarClienteDTO } from "./cliente.dto.js";
-import { criarClienteService } from "./cliente.service.js";
+import type { criarClienteDTO } from "../dtos/interfacesCliente.dto.js";
+import { criarClienteService } from "../services/criarCliente.service.js";
 
 export async function criarClienteController(req: Request, res: Response) {
     try {

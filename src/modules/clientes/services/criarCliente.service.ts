@@ -1,5 +1,5 @@
-import type { criarClienteDTO } from "./cliente.dto.js";
-import { criarClienteRepository } from "./cliente.repository.js";
+import type { criarClienteDTO } from "../dtos/interfacesCliente.dto.js";
+import { criarClienteRepository } from "../repositories/criarCliente.repository.js";
 
 export async function criarClienteService(dados: criarClienteDTO) {
 
