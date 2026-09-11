@@ -1,3 +1,4 @@
+import { gerarHash } from "../../middleware/bcrypt.js";
 import type { CriarUsuarioDto } from "../dtos/interfacesUsuario.js";
 import { criarUsuarioRepository } from "../repositories/criarUsuario.repository.js";
 
@@ -20,6 +21,11 @@ export async function criarUsuariosService(dados: CriarUsuarioDto): Promise<void
         throw new Error("Senha inválida, tente novamente.");
     }
 
+    const senhaHash = await gerarHash(dados.senha);
+    const usuario = {
+        ...dados,
+        senha: senhaHash
+    }
 
-    return await criarUsuarioRepository(dados);
+    return await criarUsuarioRepository(usuario);
 }

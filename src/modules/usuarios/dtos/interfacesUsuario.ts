@@ -30,8 +30,6 @@ export interface UsuarioDto {
 }
 
 export interface loginUsuarioDTO {
-    readonly id: number;
-    readonly empresa_id: number;
     readonly email: string;
-    readonly tipo: Tipo;
+    readonly senha: string;
 }

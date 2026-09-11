@@ -10,5 +10,6 @@ routerUsuario.get("/", listarUsuariosController);
 routerUsuario.get("/:id", buscarUsuarioController);
 routerUsuario.post("/", criarUsuarioController);
 routerUsuario.patch("/:id", alterarUsuarioController);
+routerUsuario.get("/login", )
 
 export default routerUsuario;
