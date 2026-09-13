@@ -29,6 +29,13 @@ export interface UsuarioDto {
     senha: string;
 }
 
+export interface TokenUsuarioDto {
+    readonly id: number;
+    readonly empresa_id: number;
+    tipo: Tipo;
+    email: string;
+}
+
 export interface loginUsuarioDTO {
     readonly email: string;
     readonly senha: string;

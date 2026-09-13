@@ -1,4 +1,3 @@
-import type { loginUsuarioDTO } from "../dtos/interfacesUsuario.js";
 import { buscarEmailUsuarioRepository } from "../repositories/buscarEmailUsuario.repository.js";
 
 
