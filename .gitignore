@@ -1,3 +1,6 @@
 .env
 *.db
 node_modules
+dist/
+crud.md
+PescaCommit.md
