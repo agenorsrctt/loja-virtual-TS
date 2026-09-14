@@ -6,13 +6,13 @@ import type { Request, Response } from "express";
 export async function loginUsuarioController(req: Request, res: Response) {
     try {
 
-        const { email, senha } = req.body;
+        const { empresa_id, email, senha } = req.body;   
 
-        if (!email || !senha) {
+        if (!empresa_id || !email || !senha) {
             throw new Error("E-mail ou senha inválidos.");
         };
 
-        const usuario = await buscarEmailUsuarioService(email);
+        const usuario = await buscarEmailUsuarioService(email, empresa_id);
 
         if (!usuario) {
             throw new Error("E-mail ou senha inválidos.");

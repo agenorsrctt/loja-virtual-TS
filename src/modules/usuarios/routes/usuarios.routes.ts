@@ -5,6 +5,7 @@ import { buscarUsuarioController } from "../controllers/buscarUsuario.controller
 import { alterarUsuarioController } from "../controllers/alterarUsuario.controller.js";
 import { loginUsuarioController } from "../controllers/loginUsuario.controller.js";
 import { autenticar } from "../../middleware/jwt.js";
+import { inativarUsuarioController } from "../controllers/inativarUsuario.controller.js";
 
 const routerUsuario = express.Router();
 
@@ -13,5 +14,6 @@ routerUsuario.get("/", autenticar, listarUsuariosController);
 routerUsuario.get("/:id", autenticar, buscarUsuarioController);
 routerUsuario.post("/", autenticar, criarUsuarioController);
 routerUsuario.patch("/:id", autenticar, alterarUsuarioController);
+routerUsuario.delete("/:id", autenticar, inativarUsuarioController);
 
 export default routerUsuario;

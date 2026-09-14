@@ -1,12 +1,11 @@
 import type { PrimeiroAcesso, Status, Tipo } from "./typesUsuario.js";
 
 export interface CriarUsuarioDto {
-    empresa_id: number;
+    readonly empresa_id: number;
     nome: string;
     tipo: Tipo;
     email: string;
     senha: string;
-    primeiroAcesso: PrimeiroAcesso;
 }
 
 export interface AlterarUsuarioDto {
@@ -26,7 +25,7 @@ export interface UsuarioDto {
     tipo: Tipo;
     email: string;
     status: Status;
-    senha: string;
+    senha: string
 }
 
 export interface TokenUsuarioDto {

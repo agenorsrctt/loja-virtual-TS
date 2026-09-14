@@ -9,13 +9,13 @@ export async function buscarUsuarioService(empresa_id: number, id: number, tipo:
         throw new Error("Usuario sem permissão, tente novamente.");
     }
 
-    if(empresa_id !== undefined && !empresa_id && empresa_id <= 0) {
+    if (!empresa_id || empresa_id <= 0) {
         throw new Error("Empresa inválida, tente novamente.");
-    };
+    }
 
-    if(id !== undefined && !id && id <= 0 ) {
-        throw new Error("Usuario não localizado, tente novamente");
-    };
+    if (!id || id <= 0) {
+        throw new Error("Usuario não localizado, tente novamente.");
+    }
 
 
     return await buscarUsuarioRepository(empresa_id, id);

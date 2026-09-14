@@ -5,7 +5,7 @@ import { criarUsuarioRepository } from "../repositories/criarUsuario.repository.
 
 
 export async function criarUsuariosService(dados: CriarUsuarioDto, tipo: Tipo, empresa_id: number): Promise<void> {
-    
+
     if (tipo !== "admin" && tipo !== "gerente") {
         throw new Error("Usuario sem permissão, tente novamente.");
     }
@@ -26,8 +26,8 @@ export async function criarUsuariosService(dados: CriarUsuarioDto, tipo: Tipo, e
         throw new Error("Senha inválida, tente novamente.");
     }
 
-    if (!empresa_id) {
-        throw new Error("Usuario não autenticado, tente novamente.");
+    if (!empresa_id || empresa_id <= 0) {
+        throw new Error("Empresa inválida, tente novamente.");
     }
 
     const senhaHash = await gerarHash(dados.senha);

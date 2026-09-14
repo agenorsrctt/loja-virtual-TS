@@ -18,7 +18,7 @@ export async function buscarUsuarioController(req: Request, res: Response) {
     } catch (error) {
         
         if(error instanceof Error) {
-            res.status(500).json({
+            return res.status(500).json({
                 mensagem:  "Erro no servidor" + error
             });
         }
