@@ -3,7 +3,7 @@ import type { ClienteDTO } from "../dtos/interfacesCliente.dto.js";
 
 
 
-export function listarCliente(empresa_id: number): Promise<ClienteDTO[]>{
+export function listarClienteRepository(empresa_id: number): Promise<ClienteDTO[]>{
 
     const sql = "SELECT * FROM CLIENTES WHERE empresa_id = ?";
     const valores: number[] = [];
