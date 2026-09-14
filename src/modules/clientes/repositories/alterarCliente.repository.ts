@@ -25,11 +25,6 @@ export function alterarCliente(dados: alterarClienteDTO): Promise<void> {
         campos.push("status = ?")
     }
 
-    if(dados.senha) {
-        valores.push(dados.senha);
-        campos.push("senha = ?")
-    }
-
     valores.push(dados.empresa_id, dados.id);
 
     const sql = `UPDATE CLIENTES SET ${campos.join(", ")} WHERE empresa_id = ? AND id = ?`

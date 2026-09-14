@@ -31,7 +31,6 @@ db.serialize(() => {
         email TEXT,
         telefone TEXT NOT NULL,
         status TEXT NOT NULL,
-        senha TEXT NOT NULL,
         FOREIGN KEY (empresa_id) references EMPRESAS(id),
         UNIQUE (empresa_id, email),
         UNIQUE (empresa_id, telefone)

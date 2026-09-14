@@ -6,7 +6,6 @@ export interface criarClienteDTO {
     email?: string;
     telefone: string;
     status: Status;
-    senha: string;
 }
 
 export interface alterarClienteDTO {
@@ -16,5 +15,13 @@ export interface alterarClienteDTO {
     email?: string;
     telefone?: string;
     status?: Status;
-    senha?: string;
+}
+
+export interface ClienteDTO {
+    readonly id: number;
+    readonly empresa_id: number;
+    nome: string;
+    email: string;
+    telefone: string;
+    status: Status;
 }
