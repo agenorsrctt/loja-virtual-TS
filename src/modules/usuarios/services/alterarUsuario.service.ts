@@ -1,8 +1,15 @@
+import { gerarHash } from "../../middleware/bcrypt.js";
 import type { AlterarUsuarioDto } from "../dtos/interfacesUsuario.js";
+import type { Tipo } from "../dtos/typesUsuario.js";
 import { alterarUsuarioRepository } from "../repositories/alterarUsuario.repository.js";
 
 
-export async function alterarUsuarioService(dados: AlterarUsuarioDto, empresa_id: number, id: number): Promise<void> {
+export async function alterarUsuarioService(dados: AlterarUsuarioDto, empresa_id: number, id: number, tipo: Tipo): Promise<void> {
+    
+    if(tipo !== "admin" && tipo !== "gerente"){
+        throw new Error("Usuario sem permissão, tente novamente.");
+    }
+    
     if(dados.nome !== undefined && !dados.nome.trim() ) {
         throw new Error("Nome inválido, tente novamente.");
     };
@@ -11,8 +18,10 @@ export async function alterarUsuarioService(dados: AlterarUsuarioDto, empresa_id
         throw new Error("Tipo inválido, tente novamente.");
     }
 
-    if(dados.email !== undefined && !dados.email.trim() && dados.email.includes("@")) {
-        throw new Error("E-mail inválido, tente novamente.");
+    if(dados.email !== undefined) {
+        if(!dados.email.trim() || dados.email.includes("@")){
+            throw new Error("E-mail inválido, tente novamente.");
+        }
     }
 
     if(dados.status !== undefined && !["ativo","inativo"].includes(dados.status)) {
@@ -23,5 +32,9 @@ export async function alterarUsuarioService(dados: AlterarUsuarioDto, empresa_id
         throw new Error("Senha inválida, tente novamente.");
     }
 
-    return await alterarUsuarioRepository(dados, dados.empresa_id, dados.id);
+    if(dados.senha){
+        dados.senha = await gerarHash(dados.senha);
+    }
+
+    return await alterarUsuarioRepository(dados, empresa_id, id);
 }

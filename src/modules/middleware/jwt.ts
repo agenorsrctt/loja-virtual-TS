@@ -30,15 +30,41 @@ export function gerarToken(usuario: TokenUsuarioDto): string {
 
 export function autenticar(req: Request, res: Response, next: NextFunction) {
 
-    const headerAuthorization = req.headers.authorization;
+    try {
+        const headerAuthorization = req.headers.authorization;
 
-    if (!headerAuthorization) {
-        throw new Error("Token inválido, necessario validar o acesso!")
+        if (!headerAuthorization) {
+            throw new Error("Token inválido, necessario validar o acesso!")
+        }
+
+        const dados = headerAuthorization.split(" ");
+
+        const tipoToken = dados[0];
+        const token = dados[1];
+
+        if (tipoToken !== "Bearer" || !token) {
+            return res.status(401).json({
+                mensagem: "Token inválido."
+            });
+        }
+
+        if (!process.env.JWT_SECRET) {
+            throw new Error("JWT_SECRET não configurado.");
+        }
+
+        const usuario = jwt.verify(
+            token,
+            process.env.JWT_SECRET
+        );
+
+        res.locals.usuario = usuario;
+
+        next();
+    } catch (error) {
+
+        return res.status(401).json({
+            mensagem: "Token inválido ou expirado."
+        });
+
     }
-
-    const dados = headerAuthorization.split(" ");
-
-    const token = dados[1];
-
-    return token;
 }

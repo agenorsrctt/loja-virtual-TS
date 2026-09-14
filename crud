@@ -1,0 +1,26 @@
+Para criar empresas: 
+
+{
+    empresa,
+    cnpj
+}
+
+Criar usuarios:
+
+{
+    empresa_id,
+    nome,
+    tipo,
+    email,
+    senha
+}
+
+get Usuarios :
+
+{
+    empresa_id
+}
+
+alterar Usuarios: {
+    
+}

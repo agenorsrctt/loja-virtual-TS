@@ -3,13 +3,15 @@ import { criarUsuarioController } from "../controllers/criarUsuarios.controller.
 import { listarUsuariosController } from "../controllers/listarUsuario.controller.js";
 import { buscarUsuarioController } from "../controllers/buscarUsuario.controller.js";
 import { alterarUsuarioController } from "../controllers/alterarUsuario.controller.js";
+import { loginUsuarioController } from "../controllers/loginUsuario.controller.js";
+import { autenticar } from "../../middleware/jwt.js";
 
 const routerUsuario = express.Router();
 
-routerUsuario.get("/", listarUsuariosController);
-routerUsuario.get("/:id", buscarUsuarioController);
-routerUsuario.post("/", criarUsuarioController);
-routerUsuario.patch("/:id", alterarUsuarioController);
-routerUsuario.get("/login", )
+routerUsuario.post("/login", loginUsuarioController )
+routerUsuario.get("/", autenticar, listarUsuariosController);
+routerUsuario.get("/:id", autenticar, buscarUsuarioController);
+routerUsuario.post("/", autenticar, criarUsuarioController);
+routerUsuario.patch("/:id", autenticar, alterarUsuarioController);
 
 export default routerUsuario;

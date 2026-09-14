@@ -1,9 +1,14 @@
 import { gerarHash } from "../../middleware/bcrypt.js";
 import type { CriarUsuarioDto } from "../dtos/interfacesUsuario.js";
+import type { Tipo } from "../dtos/typesUsuario.js";
 import { criarUsuarioRepository } from "../repositories/criarUsuario.repository.js";
 
 
-export async function criarUsuariosService(dados: CriarUsuarioDto): Promise<void> {
+export async function criarUsuariosService(dados: CriarUsuarioDto, tipo: Tipo, empresa_id: number): Promise<void> {
+    
+    if (tipo !== "admin" && tipo !== "gerente") {
+        throw new Error("Usuario sem permissão, tente novamente.");
+    }
 
     if (!dados.nome.trim()) {
         throw new Error("Nome inválido, tente novamente.");
@@ -21,11 +26,15 @@ export async function criarUsuariosService(dados: CriarUsuarioDto): Promise<void
         throw new Error("Senha inválida, tente novamente.");
     }
 
+    if (!empresa_id) {
+        throw new Error("Usuario não autenticado, tente novamente.");
+    }
+
     const senhaHash = await gerarHash(dados.senha);
     const usuario = {
         ...dados,
         senha: senhaHash
     }
 
-    return await criarUsuarioRepository(usuario);
+    return await criarUsuarioRepository(usuario, empresa_id);
 }
