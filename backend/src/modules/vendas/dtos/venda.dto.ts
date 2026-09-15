@@ -1,6 +1,6 @@
 import type { CriarItemVendidoDTO, ItemVendidoDTO } from "../../itens_vendidos/dtos/itemVendido.dto.js";
 
-export type StatusVenda = "concluida" | "cancelada";
+export type StatusVenda = "pendente" | "cancelado" | "pago";
 
 export interface CriarVendaDTO {
 
