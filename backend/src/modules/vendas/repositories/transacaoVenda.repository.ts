@@ -1,8 +1,10 @@
 import sqlite3 from "sqlite3";
 
-type ValorSQL = string | number | null;
+import type { ConexaoBanco, ValorSQL } from "../../../database/conexaoBanco.js";
 
-export function executarSQL(conexao: sqlite3.Database, sql: string, valores: ValorSQL[] = []): Promise<{ id: number; alteracoes: number }> {
+import { executarTransacaoTurso } from "../../../database/turso.js";
+
+export function executarSQL(conexao: ConexaoBanco, sql: string, valores: ValorSQL[] = []): Promise<{ id: number; alteracoes: number }> {
 
     return new Promise((resolve, reject) => {
 
@@ -22,7 +24,7 @@ export function executarSQL(conexao: sqlite3.Database, sql: string, valores: Val
 
 }
 
-export function buscarSQL<T>(conexao: sqlite3.Database, sql: string, valores: ValorSQL[] = []): Promise<T | undefined> {
+export function buscarSQL<T>(conexao: ConexaoBanco, sql: string, valores: ValorSQL[] = []): Promise<T | undefined> {
 
     return new Promise((resolve, reject) => {
 
@@ -42,7 +44,7 @@ export function buscarSQL<T>(conexao: sqlite3.Database, sql: string, valores: Va
 
 }
 
-export function listarSQL<T>(conexao: sqlite3.Database, sql: string, valores: ValorSQL[] = []): Promise<T[]> {
+export function listarSQL<T>(conexao: ConexaoBanco, sql: string, valores: ValorSQL[] = []): Promise<T[]> {
 
     return new Promise((resolve, reject) => {
 
@@ -63,11 +65,17 @@ export function listarSQL<T>(conexao: sqlite3.Database, sql: string, valores: Va
 }
 
 // Uma conexão exclusiva impede que outras requisições participem da transação.
-export async function executarTransacaoVenda<T>(operacao: (conexao: sqlite3.Database) => Promise<T>): Promise<T> {
+export async function executarTransacaoVenda<T>(operacao: (conexao: ConexaoBanco) => Promise<T>): Promise<T> {
+
+    if (process.env.TURSO_DATABASE_URL) {
+
+        return executarTransacaoTurso(operacao);
+
+    }
 
     const conexao = await new Promise<sqlite3.Database>((resolve, reject) => {
 
-        const banco = new sqlite3.Database("src/database/database.db", (erro) => {
+        const banco = new sqlite3.Database(process.env.SQLITE_PATH || "src/database/database.db", (erro) => {
 
             if (erro) {
 
