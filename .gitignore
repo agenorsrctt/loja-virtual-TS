@@ -1,5 +1,12 @@
 .env
+.env.*
+!.env.*.example
 *.db
+*.db-*
+*.sqlite*
+*.sql
+.vercel/
+backend/public/
 node_modules
 dist/
 crud.md
