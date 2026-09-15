@@ -1,10 +1,10 @@
-import type sqlite3 from "sqlite3";
+import type { ConexaoBanco } from "../../../database/conexaoBanco.js";
 
 import { buscarSQL } from "./transacaoVenda.repository.js";
 
 import { ErroVenda } from "../utils/erroVenda.util.js";
 
-export async function validarParticipantesVendaRepository(conexao: sqlite3.Database, empresa_id: number, usuario_id: number, cliente_id: number): Promise<void> {
+export async function validarParticipantesVendaRepository(conexao: ConexaoBanco, empresa_id: number, usuario_id: number, cliente_id: number): Promise<void> {
 
     const empresa = await buscarSQL<{ status: string }>(conexao, "SELECT status FROM EMPRESAS WHERE id = ?", [empresa_id]);
 
