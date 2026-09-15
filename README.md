@@ -1,6 +1,6 @@
 # ASR Systems — gestão de vendas
 
-Frontend em HTML, CSS e JavaScript modular, integrado ao backend TypeScript, Express e SQLite.
+Frontend em HTML, CSS e JavaScript modular, integrado ao backend TypeScript e Express, com SQLite local ou Turso na nuvem.
 
 ## Estrutura
 
@@ -25,6 +25,8 @@ Acesse **http://localhost:3000**. O backend serve o frontend em `/app`, na mesma
 O `.env` e o banco existentes foram movidos junto com o backend. A configuração fica em `backend/.env`.
 
 ## Primeiro acesso
+
+Para publicar frontend e API juntos na Vercel, com banco no Turso, siga o [guia de publicação](backend/docs/publicar-vercel-turso.md). Ele explica a preparação do banco, a criação do SuperAdmin e as configurações do painel. O desenvolvimento local continua usando `backend/.env` e SQLite; a preparação remota usa `backend/.env.turso`.
 
 1. Caso ainda não exista um SuperAdmin, configure as variáveis em `backend/.env` conforme o [guia de acesso](backend/docs/acesso-inicial.md) e execute `npm run criar-superadmin` na raiz.
 2. Na tela de login, selecione SuperAdmin e entre com suas credenciais.
