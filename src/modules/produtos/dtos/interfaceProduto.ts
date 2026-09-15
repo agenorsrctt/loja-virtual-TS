@@ -17,8 +17,8 @@ export interface CriarProdutoDTO {
     produto: string;
     estoque: number;
     preco: number;
-    categoria?: string;
-    codigo?: string;
+    categoria: string;
+    codigo: string;
     status: StatusProdutos
 }
 

@@ -1,4 +1,5 @@
 import type { CriarProdutoDTO } from "../dtos/interfaceProduto.js";
+import { criarProdutoRepository } from "../repositories/criarProduto.repository.js";
 
 
 
@@ -14,6 +15,16 @@ export async function criarProdutoService(dados: CriarProdutoDTO, empresa_id: nu
 
     if(dados.produto !== undefined && !dados.produto.trim()) {
         throw new Error("Produto inválido, tente novamente.")
+    }
+
+    if(dados.categoria !== undefined && !dados.categoria.trim()) {
+        throw new Error("Produto inválido, tente novamente.")
+    }
+
+    if(dados.status !== undefined) {
+        if(dados.status !== "ativo" && dados.status !== "inativo"){
+            throw new Error("Produto inválido, tente novamente.")
+        }
     }
 
     if(dados.preco !== undefined){
