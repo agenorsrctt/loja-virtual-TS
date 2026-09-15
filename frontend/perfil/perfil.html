@@ -1,0 +1,70 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#202873">
+  <title>Meu perfil | Vértice</title>
+  <link rel="icon" href="../favicon.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="../compartilhado/estilos.css">
+  <link rel="stylesheet" href="./perfil.css">
+  <script type="module" src="./perfil.js">
+    </script>
+</head>
+<body>
+  <a class="sr-only" href="#principal">Ir para o conteúdo</a>
+  <div id="navegacao">
+    </div>
+  <main class="conteudo" id="principal">
+    <div class="cabecalho-pagina">
+    <div>
+    <h1>Meu perfil</h1>
+    <p>Sua conta e sua segurança.</p>
+    </div>
+    <button class="botao secundario" id="sair">
+    <span data-icon="sair">
+    </span> Sair</button>
+    </div>
+    <div class="grade perfil-layout">
+    <section class="painel" id="minha-conta">
+    </section>
+    <section class="painel">
+    <div class="painel-cabecalho">
+    <div>
+    <h2>Alterar senha</h2>
+    <p>Após a troca, entre novamente em sua conta.</p>
+    </div>
+    <span class="icone-caixa azul" data-icon="cadeado">
+    </span>
+    </div>
+    <form id="form-senha" class="formulario">
+    <div class="campo">
+    <label for="senha_atual">Senha atual</label>
+    <div class="senha-input">
+    <input id="senha_atual" name="senha_atual" type="password" required autocomplete="current-password">
+    <button type="button" data-senha="senha_atual" aria-label="Mostrar senha">
+    </button>
+    </div>
+    </div>
+    <div class="campo">
+    <label for="nova_senha">Nova senha</label>
+    <div class="senha-input">
+    <input id="nova_senha" name="nova_senha" type="password" required minlength="12" autocomplete="new-password">
+    <button type="button" data-senha="nova_senha" aria-label="Mostrar senha">
+    </button>
+    </div>
+    <small>Ao menos 12 caracteres e no máximo 72 bytes.</small>
+    </div>
+    <div class="campo">
+    <label for="confirmar">Confirme a nova senha</label>
+    <input id="confirmar" name="confirmar" type="password" required autocomplete="new-password">
+    </div>
+    <div class="aviso erro" data-erro role="alert" hidden>
+    </div>
+    <button class="botao" type="submit">Salvar nova senha</button>
+    </form>
+    </section>
+    </div>
+    </main>
+</body>
+</html>
