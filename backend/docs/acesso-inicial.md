@@ -66,15 +66,15 @@ A resposta **201** contém:
     "status": "ativo",
     "administrador": {
       "id": 1,
-      "email": "admin-valor-aleatorio@primeiro-acesso.invalid",
-      "senha_temporaria": "valor-aleatorio-gerado-pelo-servidor",
+      "email": "primeiro@acesso.com",
+      "senha_temporaria": "123456",
       "primeiro_acesso": true
     }
   }
 }
 ```
 
-IDs e credenciais são exemplos. Guarde e entregue ao responsável o ID da empresa, o e-mail temporário e a senha temporária retornados. A senha aparece apenas nessa resposta; no banco fica o hash. O e-mail temporário é um identificador de login, não uma caixa de correio, e nenhum e-mail é enviado automaticamente.
+O código é o ID numérico sequencial da empresa (1, 2, 3...). Novas empresas usam o e-mail inicial `primeiro@acesso.com` e a senha temporária `123456`. Contas existentes não são redefinidas. Guarde e entregue ao responsável o ID da empresa, o e-mail temporário e a senha temporária retornados. A senha aparece apenas nessa resposta; no banco fica o hash. O e-mail temporário é um identificador de login, não uma caixa de correio, e nenhum e-mail é enviado automaticamente.
 
 Empresa e administrador são criados na mesma transação. CNPJ duplicado retorna **409** sem deixar um usuário ou empresa parcial.
 
@@ -87,8 +87,8 @@ Todas as rotas `/empresas` exigem superAdmin: listar, buscar, criar, alterar e i
 ```json
 {
   "empresa_id": 1,
-  "email": "email-temporario-retornado",
-  "senha": "senha-temporaria-retornada"
+  "email": "primeiro@acesso.com",
+  "senha": "123456"
 }
 ```
 
