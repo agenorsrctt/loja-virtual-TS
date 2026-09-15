@@ -216,7 +216,7 @@ async function carregar() {
 
         original = (await api('/vendas/' + id)).dados;
 
-        if (original.status === 'cancelada') throw new Error('Uma venda cancelada não pode ser alterada.');
+        if (original.status !== 'pendente') throw new Error('Somente vendas pendentes podem ser alteradas.');
 
         cliente = clientes.find(c => c.id === original.cliente_id && c.status === 'ativo') || null;
 
