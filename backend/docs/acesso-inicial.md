@@ -1,5 +1,7 @@
 # SuperAdmin e primeiro acesso
 
+Este roteiro descreve a execução local. Para criar a conta no Turso e publicar na Vercel, use o [guia de publicação](publicar-vercel-turso.md), com `backend/.env.turso` e `npm run criar-superadmin:turso`.
+
 ## 1. Criar seu único superAdmin
 
 Na nova estrutura, configure `backend/.env` com valores escolhidos por você. Os comandos abaixo podem ser executados na raiz do repositório:
