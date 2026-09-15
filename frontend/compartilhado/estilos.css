@@ -126,9 +126,9 @@ small, .muted { color: var(--suave); }
 
 .etiqueta { display: inline-flex; gap: 5px; align-items: center; border-radius: 6px; padding: 4px 9px; font-size: 11px; font-weight: 650; white-space: nowrap; }
 
-.etiqueta.ativo, .etiqueta.concluida { background: #eaf7ef; color: #208655; }
+.etiqueta.ativo, .etiqueta.pago { background: #eaf7ef; color: #208655; }
 
-.etiqueta.inativo, .etiqueta.cancelada { background: #fceef0; color: #c74b56; }
+.etiqueta.inativo, .etiqueta.cancelado { background: #fceef0; color: #c74b56; }
 
 .acoes-rapidas { display: grid; grid-template-columns: repeat(4, 1fr); gap: 14px; }
 
@@ -257,3 +257,5 @@ dialog::backdrop { background: #12193680; backdrop-filter: blur(3px); }
 @keyframes girar { to { transform: rotate(360deg); } }
 
 @media (prefers-reduced-motion: reduce) { *, *::before { animation: none !important; transition: none !important; } }
+
+.etiqueta.pendente { background: #fff4dd; color: #946000; }
