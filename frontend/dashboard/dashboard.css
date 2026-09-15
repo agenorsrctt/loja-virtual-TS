@@ -1,0 +1,25 @@
+.boas-vindas { display: flex; align-items: center; justify-content: space-between; margin-bottom: 29px; gap: 18px; }
+
+.sobretitulo { display: block; font-size: 9px; font-weight: 750; letter-spacing: 2px; color: #8490a5; margin-bottom: 10px; }
+
+.boas-vindas p { color: #7c879b; margin-top: 10px; font-size: 13px; }
+
+.total-semana { font-size: 31px; letter-spacing: -1px; }
+
+.link-estoque { display: inline-block; font-size: 12px; margin-top: 18px; }
+
+@media (max-width: 760px) {
+    .boas-vindas { margin: -24px -18px 0; padding: 20px 23px 65px; background: linear-gradient(120deg, #243da0, #272664); color: white; }
+    .boas-vindas p { color: #d5daf4; }
+    .boas-vindas .sobretitulo { display: none; }
+    .boas-vindas .botao { display: none; }
+    #dados-dashboard { position: relative; margin-top: -37px; }
+    .metrica:nth-child(1) { background: linear-gradient(120deg, white, #f0faf5); }
+    .metrica:nth-child(2) { background: linear-gradient(120deg, white, #f0f3fe); }
+    .metrica:nth-child(3) { background: linear-gradient(120deg, white, #f7f1fc); }
+    .metrica:nth-child(4) { background: linear-gradient(120deg, white, #fff6ee); }
+    .metrica:nth-child(1) strong { color: var(--verde); }
+    .metrica:nth-child(2) strong { color: var(--azul); }
+    .metrica:nth-child(3) strong { color: #8051c7; }
+    .metrica:nth-child(4) strong { color: #e48625; }
+}
