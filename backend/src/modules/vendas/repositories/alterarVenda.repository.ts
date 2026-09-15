@@ -18,9 +18,9 @@ export function alterarVendaRepository(dados: AlterarVendaDTO, empresa_id: numbe
 
         const venda = await buscarVendaNaConexao(conexao, empresa_id, id);
 
-        if (venda.status !== "concluida") {
+        if (venda.status !== "pendente") {
 
-            throw new ErroVenda("Venda cancelada não pode ser alterada.", 409);
+            throw new ErroVenda("Somente vendas pendentes podem ser alteradas.", 409);
 
         }
 
