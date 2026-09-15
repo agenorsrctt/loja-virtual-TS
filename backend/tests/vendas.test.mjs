@@ -186,7 +186,7 @@ test("vendas e itens vendidos: integração HTTP e transações isoladas", async
 
         const tabelas = [...init.matchAll(/executarSQL\(db, `(CREATE TABLE[\s\S]*?)`\)/g)];
 
-        assert.equal(tabelas.length, 6);
+        assert.equal(tabelas.length, 7);
 
         for (const [, sql] of tabelas) {
 

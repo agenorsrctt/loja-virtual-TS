@@ -1,4 +1,5 @@
 import rotasAdministracao from "./modules/acesso/routes/administracao.routes.js";
+import { registrarVisita } from "./modules/acesso/controllers/visitas.controller.js";
 
 import { fileURLToPath } from "node:url";
 
@@ -57,6 +58,7 @@ app.use(async (_req, res, proximo) => {
 });
 
 app.use("/administracao", rotasAdministracao);
+app.post("/visitas", registrarVisita);
 
 console.log("App iniciado com sucesso!");
 

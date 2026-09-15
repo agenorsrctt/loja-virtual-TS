@@ -8,6 +8,10 @@ import { migrarStatusVendas } from "./migrarStatusVendas.js";
 
 export async function prepararBanco(): Promise<void> {
 
+    await executarSQL(db, `CREATE TABLE IF NOT EXISTS VISITAS(
+        sessao TEXT PRIMARY KEY NOT NULL
+        )`);
+
     await executarSQL(db, `CREATE TABLE IF NOT EXISTS EMPRESAS(
         id INTEGER PRIMARY KEY AUTOINCREMENT,
         empresa TEXT NOT NULL,
@@ -82,12 +86,13 @@ export async function prepararBanco(): Promise<void> {
     await migrarStatusVendas();
 
     await executarSQL(db, "INSERT OR IGNORE INTO MIGRACOES(nome) VALUES('asr_schema_v1')");
+    await executarSQL(db, "INSERT OR IGNORE INTO MIGRACOES(nome) VALUES('asr_schema_v2_visitas')");
 
 }
 
 export async function verificarBanco(): Promise<void> {
 
-    const versao = await buscarSQL(db, "SELECT nome FROM MIGRACOES WHERE nome = 'asr_schema_v1'");
+    const versao = await buscarSQL(db, "SELECT nome FROM MIGRACOES WHERE nome = 'asr_schema_v2_visitas'");
 
     if (!versao) {
 

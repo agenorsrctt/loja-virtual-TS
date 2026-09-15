@@ -186,7 +186,7 @@ test("superAdmin e primeiro acesso: fluxo HTTP completo", async (t) => {
 
         const tabelas = [...init.matchAll(/executarSQL\(db, `(CREATE TABLE[\s\S]*?)`\)/g)];
 
-        assert.equal(tabelas.length, 6);
+        assert.equal(tabelas.length, 7);
 
         for (const [, sql] of tabelas) {
 
@@ -218,6 +218,10 @@ test("superAdmin e primeiro acesso: fluxo HTTP completo", async (t) => {
 
         app.use(express.json());
 
+        const visitas = await carregar(path.join(raiz, "src/modules/acesso/controllers/visitas.controller.ts"));
+        await visitas.evaluate();
+        app.post('/visitas', visitas.namespace.registrarVisita);
+
         for (const [rota, arquivo] of [["/administracao", "acesso/routes/administracao.routes.ts"], ["/empresas", "empresas/routes/empresas.routes.ts"], ["/usuarios", "usuarios/routes/usuarios.routes.ts"], ["/clientes", "clientes/routes/clientes.routes.ts"], ["/vendas", "vendas/routes/vendas.routes.ts"]]) {
 
             const modulo = await carregar(path.join(raiz, "src/modules", arquivo));
@@ -248,7 +252,7 @@ test("superAdmin e primeiro acesso: fluxo HTTP completo", async (t) => {
 
             const resposta = await fetch(base + rota, { method: metodo, headers, ...(dados === undefined ? {} : { body: JSON.stringify(dados) }) });
 
-            return { status: resposta.status, corpo: await resposta.json() };
+            return { status: resposta.status, corpo: resposta.status === 204 ? null : await resposta.json() };
 
         }
 
@@ -449,6 +453,21 @@ test("superAdmin e primeiro acesso: fluxo HTTP completo", async (t) => {
 
             assert.equal((await buscar("SELECT email FROM USUARIOS WHERE id = 1")).email, "a@teste.com");
 
+        });
+
+        await t.test("visitas são persistidas sem duplicação e consultadas somente pelo superadmin", async () => {
+            assert.equal((await requisitar('GET', '/administracao/visitas')).status, 401);
+            assert.equal((await requisitar('GET', '/administracao/visitas', undefined, tokenAdmin)).status, 403);
+            assert.equal((await requisitar('POST', '/visitas', {})).status, 400);
+            assert.equal((await requisitar('POST', '/visitas', { sessao: 'invalida' })).status, 400);
+            const sessao = 'd568664a-82f8-48b4-9a37-442aaf5eedca';
+            const respostas = await Promise.all(Array.from({ length: 5 }, () => requisitar('POST', '/visitas', { sessao })));
+            assert.ok(respostas.every(r => r.status === 204));
+            assert.equal((await requisitar('POST', '/visitas', { sessao: sessao.toUpperCase() })).status, 204);
+            assert.equal((await requisitar('GET', '/administracao/visitas', undefined, tokenSuper)).corpo.dados.total, 1);
+            await requisitar('POST', '/visitas', { sessao: 'd568664a-82f8-48b4-9a37-442aaf5eedcb' });
+            assert.equal((await requisitar('GET', '/administracao/visitas', undefined, tokenSuper)).corpo.dados.total, 2);
+            assert.equal((await buscar('SELECT COUNT(*) AS total FROM VISITAS')).total, 2);
         });
 
         await t.test("senha do superAdmin exige senha atual e revoga todas as sessões", async () => {

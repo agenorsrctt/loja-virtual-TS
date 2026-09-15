@@ -1,4 +1,7 @@
 import { api, salvarSessao } from '../compartilhado/api.js';
+import { registrarVisita } from './visitas.js';
+
+void registrarVisita();
 
 import { icone, revelarSenha, enviarFormulario } from '../compartilhado/interface.js';
 
