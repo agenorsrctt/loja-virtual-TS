@@ -1,4 +1,4 @@
-import type sqlite3 from "sqlite3";
+import type { ConexaoBanco } from "../../../database/conexaoBanco.js";
 
 import type { VendaDTO, VendaDetalhadaDTO } from "../dtos/venda.dto.js";
 
@@ -8,7 +8,7 @@ import { buscarSQL, listarSQL, executarTransacaoVenda } from "./transacaoVenda.r
 
 import { ErroVenda } from "../utils/erroVenda.util.js";
 
-export async function buscarVendaNaConexao(conexao: sqlite3.Database, empresa_id: number, id: number): Promise<VendaDetalhadaDTO> {
+export async function buscarVendaNaConexao(conexao: ConexaoBanco, empresa_id: number, id: number): Promise<VendaDetalhadaDTO> {
 
     const venda = await buscarSQL<VendaDTO>(conexao, "SELECT * FROM VENDAS WHERE empresa_id = ? AND id = ?", [empresa_id, id]);
 
