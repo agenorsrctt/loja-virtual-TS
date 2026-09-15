@@ -1,3 +1,5 @@
+import { migrarStatusVendas } from "./migrarStatusVendas.js";
+
 import { migrarAcesso } from "./migrarAcesso.js";
 
 import db from "./connection.js";
@@ -81,6 +83,6 @@ export const bancoPronto = new Promise<void>((resolve, reject) => {
 
     db.get("SELECT 1", (erro) => erro ? reject(erro) : resolve());
 
-}).then(() => migrarAcesso());
+}).then(() => migrarAcesso()).then(() => migrarStatusVendas());
 
 export default db;
