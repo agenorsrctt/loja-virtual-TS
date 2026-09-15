@@ -1,96 +1,166 @@
-# ASR Systems — gestão de vendas
+# ASR Systems | Gestão de vendas e estoque
 
-Frontend em HTML, CSS e JavaScript modular, integrado ao backend TypeScript e Express, com SQLite local ou Turso na nuvem.
+Aplicação full stack para gerenciar clientes, produtos, vendas e usuários de diferentes empresas, com separação de dados e controle de permissões.
 
-## Estrutura
+Desenvolvida com **TypeScript, Node.js e Express**, interface responsiva em **HTML, CSS e JavaScript**, banco **SQLite** no ambiente local e **Turso** na nuvem. Frontend e API publicados na **Vercel**.
 
-- `backend/`: API, banco, scripts, testes, documentação e configuração `.env`.
-- `frontend/compartilhado/`: estilos, integração com a API e componentes comuns.
-- `frontend/`: cada página tem sua própria pasta com HTML, CSS e JavaScript.
-- `package.json`: comandos para executar o projeto pela raiz.
+**[Acessar o aplicativo](https://asr-systems.vercel.app/)** · **[Repositório](https://github.com/agenorsrctt/loja-virtual-TS)** · **[Guia de publicação](backend/docs/publicar-vercel-turso.md)**
 
-As páginas são: login, primeiro acesso, dashboard, clientes, produtos, usuários, empresas, vendas, nova venda, detalhes da venda, venda concluída e perfil.
+> O acesso às funcionalidades exige autenticação. Para explorar o sistema com seus próprios dados, execute o projeto localmente conforme as instruções abaixo.
 
-## Executar
+## Sobre o projeto
 
-Na raiz do repositório, com Node.js 24:
+O ASR Systems reúne o fluxo de uma operação comercial: cadastrar clientes e produtos, registrar vendas, acompanhar pagamentos e manter o estoque consistente.
 
-```sh
-npm --prefix backend install
-npm run dev
-```
-
-Acesse **http://localhost:3000**. O backend serve o frontend em `/app`, na mesma origem da API. Use esse endereço em vez de abrir os arquivos HTML diretamente.
-
-O `.env` e o banco existentes foram movidos junto com o backend. A configuração fica em `backend/.env`.
-
-## Primeiro acesso
-
-Para publicar frontend e API juntos na Vercel, com banco no Turso, siga o [guia de publicação](backend/docs/publicar-vercel-turso.md). Ele explica a preparação do banco, a criação do SuperAdmin e as configurações do painel. O desenvolvimento local continua usando `backend/.env` e SQLite; a preparação remota usa `backend/.env.turso`.
-
-1. Caso ainda não exista um SuperAdmin, configure as variáveis em `backend/.env` conforme o [guia de acesso](backend/docs/acesso-inicial.md) e execute `npm run criar-superadmin` na raiz.
-2. Na tela de login, selecione SuperAdmin e entre com suas credenciais.
-3. Cadastre uma empresa e guarde as credenciais temporárias apresentadas para seu primeiro administrador.
-4. Saia e entre pela opção Empresa, informando o código da empresa e as credenciais recebidas.
-5. Altere o e-mail e a senha no primeiro acesso. Entre novamente para acessar as demais páginas.
-
-O perfil permite alterar a própria senha, inclusive a do SuperAdmin. A alteração encerra as sessões anteriores e exige novo login.
+O projeto demonstra a integração entre interface, API e banco de dados, com atenção a regras de negócio, autenticação, isolamento entre empresas, testes automatizados e publicação em nuvem.
 
 ## Funcionalidades
 
-- Dashboard com indicadores calculados a partir dos dados da API, vendas recentes e estoque baixo.
-- Clientes, produtos, usuários e empresas com formulários, pesquisa e ações conforme as permissões.
-- Venda em três etapas: cliente, itens e revisão.
-- Consulta, edição e cancelamento de vendas, com atualização de estoque pelo backend.
-- Interface responsiva com navegação lateral no computador e inferior no celular.
+| Área | Recursos |
+| --- | --- |
+| Dashboard | Indicadores baseados na API, vendas recentes e alertas de estoque baixo. |
+| Clientes e produtos | Cadastro, consulta, pesquisa e atualização conforme as permissões. |
+| Vendas | Fluxo em três etapas: seleção do cliente, inclusão de itens e revisão. |
+| Estoque | Baixa ao registrar a venda e devolução no cancelamento, com transações. |
+| Acompanhamento | Detalhes da venda, edição de pendentes, marcação de pagamento e cancelamento. |
+| Empresas e usuários | Administração de empresas pelo SuperAdmin e acesso aos dados por empresa. |
+| Perfil e acesso | Troca obrigatória de credenciais no primeiro acesso e alteração de senha com revogação das sessões anteriores. |
+| Interface e PWA | Layout responsivo, navegação adaptada ao celular e instalação em navegadores compatíveis. |
 
-Os valores finais da venda são calculados pelo backend. Campos de pagamento e motivo de cancelamento não são apresentados porque o modelo atual da API não os armazena.
+## Regras de negócio em destaque
 
-## Verificação
+- **Valores calculados no backend:** preços e total da venda são conferidos pelo servidor.
+- **Venda e estoque na mesma transação:** falhas desfazem as alterações para evitar registros parciais.
+- **Cancelamento sem duplicar a reposição:** cancelar novamente não devolve o estoque pela segunda vez.
+- **Status definidos:** novas vendas ficam pendentes; apenas pendentes podem ser editadas. Marcar como paga não altera o estoque, e o dashboard contabiliza vendas pagas.
+- **Separação por empresa:** autenticação e consultas restringem o acesso ao contexto da empresa do usuário.
+- **Administração global separada:** o SuperAdmin gerencia empresas, sem acesso operacional aos clientes, produtos e vendas delas.
+
+## Tecnologias
+
+| Camada | Tecnologias |
+| --- | --- |
+| Frontend | HTML5, CSS3 e JavaScript modular |
+| Backend | TypeScript, Node.js 24 e Express 5 |
+| Autenticação | JWT e bcrypt para hash de senhas |
+| Banco local | SQLite |
+| Banco na nuvem | Turso / libSQL |
+| Testes | Test runner nativo do Node.js, testes HTTP e bancos temporários |
+| Publicação | Vercel integrada ao GitHub |
+| PWA | Web App Manifest, service worker e tela de reconexão |
+
+## Organização e decisões técnicas
+
+O backend é organizado por módulos de negócio, com rotas, controladores, serviços e repositórios. A camada de banco compartilha um contrato entre SQLite e Turso, permitindo trabalhar localmente e publicar com persistência remota.
+
+Frontend e API usam a mesma origem: as páginas ficam em `/app/` e consomem as rotas do backend. No deploy, os arquivos do frontend são preparados para entrega estática pela Vercel.
+
+Na nuvem, o banco é preparado por comandos específicos antes da publicação. A aplicação verifica a versão do esquema ao iniciar. As dependências nativas de SQLite são carregadas apenas no fluxo local.
+
+```text
+loja-virtual-TS/
+├── backend/
+│   ├── docs/              # Guias de acesso, testes e publicação
+│   ├── scripts/           # Preparação do banco e tarefas administrativas
+│   ├── src/
+│   │   ├── database/      # Conexões, adaptadores e migrações
+│   │   ├── modules/       # Módulos de negócio e autenticação
+│   │   ├── app.ts         # Aplicação Express
+│   │   └── server.ts      # Servidor local
+│   ├── tests/             # Testes automatizados
+│   └── vercel.json        # Configuração de publicação
+├── frontend/
+│   ├── compartilhado/     # Componentes, estilos e integração com a API
+│   ├── icones/            # Ícones do aplicativo
+│   └── ...                # Páginas por funcionalidade
+└── package.json           # Comandos executados pela raiz
+```
+
+## Executar localmente
+
+### 1. Instalar as dependências
+
+Com **Git** e **Node.js 24** instalados:
+
+```sh
+git clone https://github.com/agenorsrctt/loja-virtual-TS.git
+cd loja-virtual-TS
+npm --prefix backend ci --include=dev
+```
+
+### 2. Configurar o ambiente
+
+Crie `backend/.env` com os valores da sua instalação:
+
+```dotenv
+JWT_SECRET=seu-segredo-aleatorio-longo
+SUPERADMIN_EMAIL=seu-email@exemplo.com
+SUPERADMIN_SENHA=sua-senha-inicial-exclusiva
+```
+
+Para gerar um segredo aleatório:
+
+```sh
+node -e "console.log(require('node:crypto').randomBytes(48).toString('hex'))"
+```
+
+A senha inicial deve ter pelo menos 12 caracteres e no máximo 72 bytes em UTF-8. O arquivo `.env` é local e não deve ser enviado ao Git. Para usar SQLite, deixe as variáveis do Turso ausentes nesse ambiente.
+
+### 3. Criar o SuperAdmin e iniciar
 
 Execute na raiz:
 
 ```sh
-npm run build
-npm run test:frontend
-npm run test:acesso
-npm run test:vendas
+npm run criar-superadmin
+npm run dev
 ```
 
-Os testes verificam contratos da API, autenticação, estoque, arquivos modulares e entrega HTTP do frontend. Eles não substituem a revisão visual e a interação manual no navegador.
+Abra **[http://localhost:3000](http://localhost:3000)**. Após criar a conta, remova `SUPERADMIN_SENHA` do `.env`.
 
-Para testar a interface, cadastre um cliente e um produto com estoque, conclua uma venda e confira seu total e estoque. Edite a venda e depois cancele para conferir a devolução do estoque. Teste também o primeiro acesso, a troca de senha e a navegação em uma tela estreita.
+### 4. Explorar o sistema
 
-Consulte o [roteiro de vendas](backend/docs/testar-vendas.md) para exemplos adicionais.
+1. Entre pela opção **SuperAdmin** com as credenciais configuradas.
+2. Cadastre uma empresa e guarde o código e as credenciais temporárias apresentados.
+3. Saia e entre pela opção **Empresa**.
+4. Conclua a troca obrigatória de e-mail e senha.
+5. Cadastre um cliente e um produto com estoque, registre uma venda e acompanhe os indicadores.
 
-## Status e acesso inicial
+Consulte o [guia de acesso inicial](backend/docs/acesso-inicial.md) para detalhes de autenticação e administração.
 
-Novas vendas ficam **pendentes**. Na lista e nos detalhes, use **Marcar como pago** ou **Cancelar**. Só vendas pendentes podem ser editadas. O cancelamento devolve o estoque uma única vez; marcar como pago não altera o estoque. O dashboard soma apenas vendas pagas. Vendas antigas concluídas são migradas para pendentes para confirmação manual do pagamento.
+## Testes e validação
 
-Novas empresas usam o código numérico sequencial, e-mail `primeiro@acesso.com` e senha temporária `123456`. A troca de e-mail e senha continua obrigatória no primeiro acesso; a senha definitiva continua exigindo pelo menos 12 caracteres. Contas existentes e o SuperAdmin mantêm suas credenciais.
+Execute os comandos na raiz:
 
-## Instalar como aplicativo (PWA)
+```sh
+npm run build
+npm run test:acesso
+npm run test:vendas
+npm run test:frontend
+npm run test:turso
+npm run test:publicacao
+```
 
-O ASR Systems tem manifesto, ícones e service worker para instalação em uma janela própria. Abra o sistema e use **Instalar app**. Quando o navegador não oferecer o convite automático, o botão mostra as instruções de instalação pelo menu.
+Os cenários incluem autenticação, permissões, primeiro acesso, isolamento entre empresas, cálculo de vendas, rollback, concorrência no estoque, cancelamento, migrações, arquivos do PWA e inicialização em modo Vercel sem carregar SQLite.
 
-- **Computador ou Android:** no navegador compatível, escolha **Instalar aplicativo**.
-- **iPhone ou iPad:** abra no Safari e use **Compartilhar → Adicionar à Tela de Início**.
-- **Desenvolvimento:** `http://localhost:3000` funciona no próprio computador. Um endereço como `http://192.168.x.x:3000` acessado pelo celular não atende ao requisito de contexto seguro; disponibilize o sistema com **HTTPS** para instalar remotamente. Consulte os [requisitos de instalação da MDN](https://developer.mozilla.org/en-US/docs/Web/Progressive_web_apps/Guides/Making_PWAs_installable).
+Os testes usam bancos temporários. `test:turso` exercita o adaptador com libSQL local; não acessa a conta Turso nem valida a latência da nuvem. A instalação do PWA e a experiência visual também exigem conferência manual no navegador.
 
-### Conexão e atualizações
+Veja também o [roteiro de testes de vendas](backend/docs/testar-vendas.md).
 
-Depois de uma primeira visita online com o service worker instalado, abrir uma página sem conexão mostra a tela de reconexão. Consultar clientes, produtos e vendas, entrar e salvar operações continua exigindo acesso ao servidor. Nenhuma venda é enfileirada para envio posterior.
+## Publicação
 
-Somente os arquivos da tela offline ficam no cache do service worker. Dados da API, credenciais e operações de escrita não são armazenados nesse cache. A sessão continua usando `sessionStorage`, com o mesmo comportamento de autenticação do site.
+O ambiente online utiliza **Vercel para frontend e API** e **Turso para os dados**. A configuração inclui a preparação do banco, variáveis de ambiente e deploy pela branch de produção.
 
-Quando uma nova versão do service worker estiver pronta, aparece **Atualização disponível**. Salve o trabalho antes de aceitar o recarregamento. Ao alterar os arquivos offline, incremente a versão de `CACHE` em `frontend/service-worker.js`. O conteúdo normal do sistema continua sendo buscado na rede.
+O passo a passo está no **[guia de publicação na Vercel com Turso](backend/docs/publicar-vercel-turso.md)**.
 
-### Teste manual da instalação
+## PWA e escopo atual
 
-1. Execute `npm run dev` e abra `http://localhost:3000` em um navegador compatível.
-2. Use **Instalar app** e abra o aplicativo instalado. Confira o nome, ícone e janela própria.
-3. Faça login e verifique uma consulta ou venda normalmente.
-4. Após a primeira visita online, desative a rede e recarregue uma página: deve aparecer a tela de reconexão.
-5. Reconecte e toque em **Tentar novamente**. Nenhuma operação deve ser enviada automaticamente.
+O aplicativo pode ser instalado em navegadores compatíveis pelo botão **Instalar app** ou pelo menu do navegador. Em dispositivos móveis, a publicação usa HTTPS.
 
-`npm run test:frontend` valida o manifesto, os ícones PNG, a entrega HTTP e o comportamento do service worker em ambiente simulado. A instalação real em cada navegador e dispositivo deve ser conferida pelo roteiro acima.
+- Login, consultas e gravações exigem conexão. Sem internet, o aplicativo apresenta uma tela de reconexão; não registra vendas offline.
+- A marcação de venda paga é manual. O projeto não possui integração com gateway de pagamento.
+- O service worker armazena os recursos da tela offline; não mantém dados da API ou vendas em uma fila de sincronização.
+- Quando uma atualização do service worker estiver disponível, salve o trabalho antes de aceitar o recarregamento.
+
+## Autor
+
+Desenvolvido por **[agenorsrctt](https://github.com/agenorsrctt)** como projeto de portfólio em desenvolvimento full stack.
