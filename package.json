@@ -6,7 +6,8 @@
   "scripts": {
     "dev": "tsx watch src/server.ts",
     "start": "tsx src/server.ts",
-    "build": "tsc"
+    "build": "tsc",
+    "test:vendas": "node --experimental-vm-modules --disable-warning=ExperimentalWarning --test tests/vendas.test.mjs"
   },
   "keywords": [],
   "author": "",
