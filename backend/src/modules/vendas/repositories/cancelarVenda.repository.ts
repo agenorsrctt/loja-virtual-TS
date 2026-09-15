@@ -12,7 +12,7 @@ export function cancelarVendaRepository(empresa_id: number, id: number): Promise
 
         const venda = await buscarVendaNaConexao(conexao, empresa_id, id);
 
-        if (venda.status === "cancelada") {
+        if (venda.status === "cancelado") {
 
             return venda;
 
@@ -20,9 +20,9 @@ export function cancelarVendaRepository(empresa_id: number, id: number): Promise
 
         await devolverEstoqueRepository(conexao, empresa_id, id);
 
-        await executarSQL(conexao, "UPDATE VENDAS SET status = 'cancelada' WHERE empresa_id = ? AND id = ?", [empresa_id, id]);
+        await executarSQL(conexao, "UPDATE VENDAS SET status = 'cancelado' WHERE empresa_id = ? AND id = ?", [empresa_id, id]);
 
-        return { ...venda, status: "cancelada" };
+        return { ...venda, status: "cancelado" };
 
     });
 
