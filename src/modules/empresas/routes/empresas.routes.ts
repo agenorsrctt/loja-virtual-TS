@@ -1,6 +1,6 @@
 import express from "express";
 
-import { autenticar } from "../../middleware/autenticacao.middleware.js";
+import { autenticarSuperAdmin } from "../../middleware/autenticacao.middleware.js";
 
 import { criarEmpresaController } from "../controllers/criarEmpresa.controller.js";
 
@@ -14,7 +14,7 @@ import { inativarEmpresaController } from "../controllers/inativarEmpresa.contro
 
 const rotasEmpresas = express.Router();
 
-rotasEmpresas.use(autenticar);
+rotasEmpresas.use(autenticarSuperAdmin);
 
 rotasEmpresas.get("/", listarEmpresasController);
 
