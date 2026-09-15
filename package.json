@@ -7,7 +7,9 @@
     "dev": "tsx watch src/server.ts",
     "start": "tsx src/server.ts",
     "build": "tsc",
-    "test:vendas": "node --experimental-vm-modules --disable-warning=ExperimentalWarning --test tests/vendas.test.mjs"
+    "test:vendas": "node --experimental-vm-modules --disable-warning=ExperimentalWarning --test tests/vendas.test.mjs",
+    "criar-superadmin": "tsx scripts/criarSuperAdmin.ts",
+    "test:acesso": "node --experimental-vm-modules --disable-warning=ExperimentalWarning --test tests/acesso.test.mjs"
   },
   "keywords": [],
   "author": "",
