@@ -2,7 +2,7 @@
 
 ## Regras implementadas
 
-- A venda nasce com status `concluida`. O cancelamento muda para `cancelada`.
+- A venda nasce com status `pendente`. `PATCH /vendas/:id/pagar` confirma como `pago`. O cancelamento muda para `cancelado`.
 - `empresa_id` e `usuario_id` vêm do token. A requisição informa `cliente_id` e `itens`.
 - Empresa, usuário e cliente precisam estar ativos para criar ou alterar uma venda.
 - Cliente e produtos devem pertencer à empresa autenticada. Produtos precisam estar ativos.
@@ -96,7 +96,7 @@ Os IDs abaixo são exemplos: substitua pelos IDs reais do cliente e dos produtos
 Esperado: **201**. A resposta traz `mensagem` e `dados`, com ID da venda, empresa, usuário, cliente, data, total, status e itens completos.
 
 - Total: **61** (2 × 25,50 + 1 × 10).
-- Status: `concluida`.
+- Status: `pendente`.
 - Estoque do produto A: **8**; produto B: **4**.
 - Confira o estoque em `GET /produtos/:id` e guarde o ID retornado da venda.
 
@@ -153,7 +153,7 @@ Para verificar rollback, tente criar uma venda com dois itens: o primeiro válid
 
 `DELETE /vendas/ID_VENDA`
 
-Esperado: **200**, status `cancelada`, estoque A **10** e B **5**, considerando apenas a sequência deste roteiro.
+Esperado: **200**, status `cancelado`, estoque A **10** e B **5**, considerando apenas a sequência deste roteiro.
 
 Repita o DELETE: deve retornar **200** e o estoque deve continuar **10** e **5**. A venda e seus itens continuam disponíveis para consulta. Um PATCH nessa venda deve retornar **409**.
 
@@ -168,3 +168,9 @@ Repita o DELETE: deve retornar **200** e o estoque deve continuar **10** e **5**
 - `tests/vendas.test.mjs`: testes reproduzíveis com banco temporário.
 
 Foi criado um commit individual por arquivo novo. A integração em `app.ts` e o comando de teste em `package.json` têm commits próprios. Consulte `git log --oneline` para revisar a sequência.
+
+## Pagamento e migração
+
+Na lista ou nos detalhes, use **Marcar como pago** após receber. A confirmação é idempotente e não altera estoque. Apenas vendas pendentes podem ser editadas. Vendas pendentes ou pagas podem ser canceladas, devolvendo estoque uma única vez. Canceladas não podem ser pagas.
+
+Na inicialização, registros antigos `concluida` passam a `pendente`, pois não havia confirmação de pagamento; `cancelada` passa a `cancelado`. O dashboard soma apenas vendas pagas.
