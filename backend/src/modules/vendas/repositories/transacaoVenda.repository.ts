@@ -1,4 +1,4 @@
-import sqlite3 from "sqlite3";
+import type sqlite3 from "sqlite3";
 
 import type { ConexaoBanco, ValorSQL } from "../../../database/conexaoBanco.js";
 
@@ -72,6 +72,8 @@ export async function executarTransacaoVenda<T>(operacao: (conexao: ConexaoBanco
         return executarTransacaoTurso(operacao);
 
     }
+
+    const { default: sqlite3 } = await import("sqlite3");
 
     const conexao = await new Promise<sqlite3.Database>((resolve, reject) => {
 

@@ -102,7 +102,15 @@ test("vendas e itens vendidos: integração HTTP e transações isoladas", async
 
             const codigo = stripTypeScriptTypes(readFileSync(arquivo, "utf8"), { mode: "transform" });
 
-            const modulo = new SourceTextModule(codigo, { identifier: arquivo });
+            const modulo = new SourceTextModule(codigo, {
+                identifier: arquivo,
+                importModuleDynamically: async referencia => {
+                    if (referencia !== 'sqlite3') throw new Error(`Importação dinâmica inesperada: ${referencia}`);
+                    if (moduloSqlite.status === 'unlinked') await moduloSqlite.link(() => {});
+                    await moduloSqlite.evaluate();
+                    return moduloSqlite;
+                },
+            });
 
             await modulo.link(async (referencia, origem) => {
 

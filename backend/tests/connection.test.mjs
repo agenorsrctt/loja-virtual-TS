@@ -44,6 +44,27 @@ test('Vercel sem Turso falha com mensagem de configuração antes de carregar SQ
     `, { VERCEL: '1' });
 });
 
+test('aplicativo completo inicia no modo Vercel sem carregar SQLite', () => {
+    executar(bloquearSqlite + `
+        import assert from 'node:assert/strict';
+        const { clienteTurso } = await import('./src/database/turso.ts');
+        const cliente = clienteTurso();
+        // Simula somente a consulta de versão, sem acessar um banco remoto.
+        cliente.execute = async ({ sql }) => {
+            assert.equal(sql, "SELECT nome FROM MIGRACOES WHERE nome = 'asr_schema_v1'");
+            return { rows: [{ nome: 'asr_schema_v1' }] };
+        };
+        try {
+            const { default: app } = await import('./src/app.ts');
+            const { bancoPronto } = await import('./src/database/init.ts');
+            await bancoPronto;
+            assert.equal(typeof app.listen, 'function');
+        } finally {
+            cliente.close();
+        }
+    `, { VERCEL: '1', TURSO_DATABASE_URL: 'libsql://teste.invalid', TURSO_AUTH_TOKEN: 'token-de-teste' });
+});
+
 test('modo local abre SQLite com integridade referencial ativada', () => {
     executar(`
         import assert from 'node:assert/strict';
