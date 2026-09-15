@@ -82,43 +82,49 @@ test("vendas e itens vendidos: integração HTTP e transações isoladas", async
 
         }
 
-        const codigo = stripTypeScriptTypes(readFileSync(arquivo, "utf8"), { mode: "transform" });
+        const carregamento = Promise.resolve().then(async () => {
 
-        const modulo = new SourceTextModule(codigo, { identifier: arquivo });
+            const codigo = stripTypeScriptTypes(readFileSync(arquivo, "utf8"), { mode: "transform" });
 
-        modulos.set(arquivo, modulo);
+            const modulo = new SourceTextModule(codigo, { identifier: arquivo });
 
-        await modulo.link(async (referencia, origem) => {
+            await modulo.link(async (referencia, origem) => {
 
-            if (referencia.endsWith("/database/connection.js")) {
+                if (referencia.endsWith("/database/connection.js")) {
 
-                return moduloBanco;
-
-            }
-
-            if (referencia === "sqlite3") {
-
-                return moduloSqlite;
-
-            }
-
-            if (!referencia.startsWith(".")) {
-
-                if (!pacotes.has(referencia)) {
-
-                    pacotes.set(referencia, sintetico(require(referencia)));
+                    return moduloBanco;
 
                 }
 
-                return pacotes.get(referencia);
+                if (referencia === "sqlite3") {
 
-            }
+                    return moduloSqlite;
 
-            return carregar(path.resolve(path.dirname(origem.identifier), referencia.replace(/\.js$/, ".ts")));
+                }
+
+                if (!referencia.startsWith(".")) {
+
+                    if (!pacotes.has(referencia)) {
+
+                        pacotes.set(referencia, sintetico(require(referencia)));
+
+                    }
+
+                    return pacotes.get(referencia);
+
+                }
+
+                return carregar(path.resolve(path.dirname(origem.identifier), referencia.replace(/\.js$/, ".ts")));
+
+            });
+
+            return modulo;
 
         });
 
-        return modulo;
+        modulos.set(arquivo, carregamento);
+
+        return carregamento;
 
     }
 
@@ -148,6 +154,12 @@ test("vendas e itens vendidos: integração HTTP e transações isoladas", async
 
         await executar("INSERT INTO PRODUTOS(id, empresa_id, produto, estoque, preco, status) VALUES(1, 1, 'P1', 10, 10.15, 'ativo'), (2, 1, 'P2', 5, 0.10, 'ativo'), (3, 2, 'P3', 10, 1, 'ativo'), (4, 1, 'P4', 1, 20, 'ativo'), (5, 1, 'P5', 10, 1, 'inativo')");
 
+        const migracao = await carregar(path.join(raiz, "src/database/migrarAcesso.ts"));
+
+        await migracao.evaluate();
+
+        await migracao.namespace.migrarAcesso();
+
         const app = express();
 
         app.use(express.json());
@@ -176,7 +188,7 @@ test("vendas e itens vendidos: integração HTTP e transações isoladas", async
 
             if (empresa) {
 
-                headers.Authorization = "Bearer " + jwt.sign({ id: empresa, empresa_id: empresa, email: "teste@teste.com", tipo: "admin" }, process.env.JWT_SECRET);
+                headers.Authorization = "Bearer " + jwt.sign({ id: empresa, empresa_id: empresa, email: "teste@teste.com", tipo: "admin", escopo: "empresa", finalidade: "acesso", versao_token: 0 }, process.env.JWT_SECRET, { expiresIn: "1h" });
 
             }
 
@@ -306,7 +318,7 @@ test("vendas e itens vendidos: integração HTTP e transações isoladas", async
 
             await executar("UPDATE USUARIOS SET status = 'inativo' WHERE id = 1");
 
-            assert.equal((await requisitar("POST", "/vendas", dadosVenda)).status, 409);
+            assert.equal((await requisitar("POST", "/vendas", dadosVenda)).status, 401);
 
             await executar("UPDATE USUARIOS SET status = 'ativo' WHERE id = 1");
 
