@@ -10,7 +10,7 @@ import { tmpdir } from "node:os";
 
 import path from "node:path";
 
-import { fileURLToPath } from "node:url";
+import { fileURLToPath, pathToFileURL } from "node:url";
 
 import { stripTypeScriptTypes, createRequire } from "node:module";
 
@@ -33,6 +33,22 @@ test("superAdmin e primeiro acesso: fluxo HTTP completo", async (t) => {
     const arquivoBanco = path.join(pasta, "teste.db");
 
     const db = new sqlite3.Database(arquivoBanco);
+
+    const ambienteBanco = Object.fromEntries(['TURSO_DATABASE_URL', 'TURSO_AUTH_TOKEN', 'SQLITE_PATH', 'VERCEL'].map(nome => [nome, process.env[nome]]));
+
+    for (const nome of Object.keys(ambienteBanco)) delete process.env[nome];
+
+    const usarTurso = process.env.ASR_TESTE_TURSO === '1';
+
+    let bancoLibsql;
+
+    if (usarTurso) {
+
+        process.env.TURSO_DATABASE_URL = 'libsql://banco-isolado.invalid';
+
+        process.env.TURSO_AUTH_TOKEN = 'token-apenas-do-teste';
+
+    }
 
     const segredoAnterior = process.env.JWT_SECRET;
 
@@ -66,7 +82,7 @@ test("superAdmin e primeiro acesso: fluxo HTTP completo", async (t) => {
 
     }
 
-    const moduloBanco = sintetico(db);
+    let moduloBanco = sintetico(db);
 
     const moduloSqlite = sintetico({ ...sqlite3, Database: BancoTeste });
 
@@ -106,7 +122,17 @@ test("superAdmin e primeiro acesso: fluxo HTTP completo", async (t) => {
 
                     if (!pacotes.has(referencia)) {
 
-                        pacotes.set(referencia, sintetico(require(referencia)));
+                        const pacote = referencia === '@libsql/client/web' && usarTurso ? { ...require(referencia), createClient: () => bancoLibsql } : require(referencia);
+
+                        const nomes = [...new Set(["default", ...Object.keys(pacote)])];
+
+                        pacotes.set(referencia, new SyntheticModule(nomes, function () {
+
+                            this.setExport("default", pacote);
+
+                            for (const nome of nomes.filter(nome => nome !== "default")) this.setExport(nome, pacote[nome]);
+
+                        }));
 
                     }
 
@@ -128,15 +154,29 @@ test("superAdmin e primeiro acesso: fluxo HTTP completo", async (t) => {
 
     }
 
+    if (usarTurso) {
+
+        bancoLibsql = require('@libsql/client').createClient({ url: pathToFileURL(arquivoBanco).href, intMode: 'number', concurrency: 1 });
+
+        await bancoLibsql.execute('PRAGMA foreign_keys = ON');
+
+        const adaptador = await carregar(path.join(raiz, 'src/database/turso.ts'));
+
+        await adaptador.evaluate();
+
+        moduloBanco = sintetico(new adaptador.namespace.BancoTurso(bancoLibsql));
+
+    }
+
     let servidor;
 
     try {
 
         await executar("PRAGMA foreign_keys = ON");
 
-        const init = await readFile(path.join(raiz, "src/database/init.ts"), "utf8");
+        const init = await readFile(path.join(raiz, "src/database/esquema.ts"), "utf8");
 
-        const tabelas = [...init.matchAll(/db\.run\(`(CREATE TABLE[\s\S]*?)`\)/g)];
+        const tabelas = [...init.matchAll(/executarSQL\(db, `(CREATE TABLE[\s\S]*?)`\)/g)];
 
         assert.equal(tabelas.length, 6);
 
@@ -224,7 +264,7 @@ test("superAdmin e primeiro acesso: fluxo HTTP completo", async (t) => {
 
                 require("node:child_process").execFile(process.execPath,
                     [path.join(raiz, "node_modules/tsx/dist/cli.mjs"), path.join(raiz, "scripts/criarSuperAdmin.ts")],
-                    { cwd: pasta, env: { ...process.env, SUPERADMIN_EMAIL: "cli@teste.com", SUPERADMIN_SENHA: "senha exclusiva do teste cli" } },
+                    { cwd: pasta, env: { ...process.env, TURSO_DATABASE_URL: "", TURSO_AUTH_TOKEN: "", VERCEL: "", SQLITE_PATH: path.join(pasta, "src/database/database.db"), SUPERADMIN_EMAIL: "cli@teste.com", SUPERADMIN_SENHA: "senha exclusiva do teste cli" } },
                     (erro, stdout, stderr) => resolve({ erro, stdout, stderr }));
 
             });
@@ -483,13 +523,23 @@ test("superAdmin e primeiro acesso: fluxo HTTP completo", async (t) => {
 
         }
 
+        bancoLibsql?.close();
+
+        for (const [nome, valor] of Object.entries(ambienteBanco)) {
+
+            if (valor === undefined) delete process.env[nome];
+
+            else process.env[nome] = valor;
+
+        }
+
         await new Promise((resolve, reject) => db.close((erro) => erro ? reject(erro) : resolve()));
 
         assert.equal(path.dirname(path.resolve(pasta)), path.resolve(tmpdir()));
 
         assert.ok(path.basename(pasta).startsWith("loja-acesso-"));
 
-        await rm(pasta, { recursive: true, force: true });
+        await rm(pasta, { recursive: true, force: true, maxRetries: 5, retryDelay: 100 });
 
         if (segredoAnterior === undefined) {
 
