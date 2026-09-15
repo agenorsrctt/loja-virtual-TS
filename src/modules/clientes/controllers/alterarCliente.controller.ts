@@ -22,7 +22,7 @@ export async function alterarClienteController(req: Request, res: Response) {
 
         if (error instanceof Error) {
             return res.status(500).json({
-                mensagem: "Erro do servidor: " + error
+                mensagem: "Erro do servidor: " + error.message
             })
         }
 
