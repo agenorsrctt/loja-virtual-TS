@@ -1,56 +1,41 @@
-import { criarEmpresaRepository } from "../repositories/criarEmpresa.repository.js";
+import crypto from "node:crypto";
 
 import type { CriarEmpresaDTO } from "../dtos/criarEmpresa.dto.js";
 
 import type { EmpresaDTO } from "../dtos/empresa.dto.js";
 
-import type { CriarUsuarioDto } from "../../usuarios/dtos/interfacesUsuario.js";
+import { executarTransacaoVenda, executarSQL } from "../../vendas/repositories/transacaoVenda.repository.js";
 
-import { criarUsuariosService } from "../../usuarios/services/criarUsuarios.service.js";
+import { gerarHashSenha } from "../../middleware/senha.util.js";
 
-import { begin, commit, rollback } from "../../../database/transaction.js";
+import { validarObjeto, ErroAcesso } from "../../acesso/utils/acesso.util.js";
 
-export async function criarEmpresaService(dados: CriarEmpresaDTO): Promise<EmpresaDTO> {
+export async function criarEmpresaService(dados: CriarEmpresaDTO) {
 
-    if (!dados || typeof dados !== "object" || Array.isArray(dados)) {
-        throw new Error("Dados da empresa inválidos.");
+    validarObjeto(dados);
 
-    }
+    if (typeof dados.empresa !== "string" || !dados.empresa.trim() || typeof dados.cnpj !== "string" || !dados.cnpj.trim()) {
 
-    if (typeof dados.empresa !== "string" || !dados.empresa.trim()) {
-        throw new Error("Nome inválido, tente novamente.");
+        throw new ErroAcesso("Nome e CNPJ são obrigatórios.", 400);
 
     }
 
-    if (typeof dados.cnpj !== "string" || !dados.cnpj.trim()) {
-        throw new Error("CNPJ inválido, tente novamente.");
+    const senhaTemporaria = crypto.randomBytes(18).toString("base64url");
 
-    }
+    const email = "admin-" + crypto.randomBytes(12).toString("hex") + "@primeiro-acesso.invalid";
 
-    await begin();
+    const hash = await gerarHashSenha(senhaTemporaria);
 
-    try {
-        const empresa = await criarEmpresaRepository(dados);
+    return executarTransacaoVenda(async (conexao) => {
 
-        const administrador: CriarUsuarioDto = {
-            empresa_id: empresa.id,
-            nome: "Admin",
-            tipo: "admin",
-            email: "mudar@email.com",
-            senha: "123456"
-        };
+        const resultado = await executarSQL(conexao, "INSERT INTO EMPRESAS(empresa, cnpj, status) VALUES(?, ?, 'ativo')", [dados.empresa, dados.cnpj]);
 
-        await criarUsuariosService(administrador, "admin", empresa.id);
+        const usuario = await executarSQL(conexao, "INSERT INTO USUARIOS(empresa_id, nome, tipo, email, senha, status, primeiro_acesso) VALUES(?, 'Admin', 'admin', ?, ?, 'ativo', 1)", [resultado.id, email, hash]);
 
-        await commit();
+        const empresa: EmpresaDTO = { id: resultado.id, empresa: dados.empresa, cnpj: dados.cnpj, status: "ativo" };
 
-        return empresa;
+        return { ...empresa, administrador: { id: usuario.id, email, senha_temporaria: senhaTemporaria, primeiro_acesso: true } };
 
-    } catch (erro) {
-        await rollback();
-
-        throw erro;
-
-    }
+    });
 
 }
