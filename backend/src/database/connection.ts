@@ -1,5 +1,3 @@
-import sqlite3 from 'sqlite3';
-
 import { BancoTurso, clienteTurso } from './turso.js';
 
 import type { ConexaoBanco } from './conexaoBanco.js';
@@ -10,7 +8,20 @@ if (process.env.VERCEL && !process.env.TURSO_DATABASE_URL) {
 
 }
 
-const db: ConexaoBanco = process.env.TURSO_DATABASE_URL ? new BancoTurso(clienteTurso()) : new sqlite3.Database(process.env.SQLITE_PATH || "src/database/database.db");
+let db: ConexaoBanco;
+
+if (process.env.TURSO_DATABASE_URL) {
+
+    db = new BancoTurso(clienteTurso());
+
+} else {
+
+    // O binário nativo do SQLite só é necessário no ambiente local.
+    const { default: sqlite3 } = await import('sqlite3');
+
+    db = new sqlite3.Database(process.env.SQLITE_PATH || "src/database/database.db");
+
+}
 
 if (!process.env.TURSO_DATABASE_URL) {
 

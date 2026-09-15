@@ -15,7 +15,7 @@
     "preparar:turso": "tsx scripts/prepararTurso.ts",
     "criar-superadmin:turso": "tsx scripts/criarSuperAdminTurso.ts",
     "test:turso": "node scripts/testarTurso.mjs",
-    "test:publicacao": "node --test tests/publicacao.test.mjs"
+    "test:publicacao": "node --test tests/publicacao.test.mjs tests/connection.test.mjs"
   },
   "keywords": [],
   "author": "",
