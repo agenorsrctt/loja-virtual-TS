@@ -9,7 +9,8 @@
     "build": "tsc",
     "test:vendas": "node --experimental-vm-modules --disable-warning=ExperimentalWarning --test tests/vendas.test.mjs",
     "criar-superadmin": "tsx scripts/criarSuperAdmin.ts",
-    "test:acesso": "node --experimental-vm-modules --disable-warning=ExperimentalWarning --test tests/acesso.test.mjs"
+    "test:acesso": "node --experimental-vm-modules --disable-warning=ExperimentalWarning --test tests/acesso.test.mjs",
+    "test:frontend": "node --test tests/frontend.test.mjs"
   },
   "keywords": [],
   "author": "",
