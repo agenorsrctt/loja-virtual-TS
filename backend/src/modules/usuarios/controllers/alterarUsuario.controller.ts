@@ -12,9 +12,11 @@ export async function alterarUsuarioController(req: Request, res: Response) {
         const empresa_id =  res.locals.usuario.empresa_id;
         const tipo: Tipo = res.locals.usuario.tipo;
 
-        await alterarUsuarioService(alterarUsuario, empresa_id, alterarUsuario.id, tipo);
+        const id = Number(req.params.id);
 
-        const usuarioAlterado: UsuarioDto = await buscarUsuarioService(empresa_id, alterarUsuario.id, tipo)
+        await alterarUsuarioService(alterarUsuario, empresa_id, id, tipo);
+
+        const usuarioAlterado: UsuarioDto = await buscarUsuarioService(empresa_id, id, tipo)
 
         res.status(200).json({
             mensagem: "Usuário alterado com sucesso!",
