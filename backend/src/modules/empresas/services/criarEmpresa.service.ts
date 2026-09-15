@@ -1,5 +1,3 @@
-import crypto from "node:crypto";
-
 import type { CriarEmpresaDTO } from "../dtos/criarEmpresa.dto.js";
 
 import type { EmpresaDTO } from "../dtos/empresa.dto.js";
@@ -20,9 +18,9 @@ export async function criarEmpresaService(dados: CriarEmpresaDTO) {
 
     }
 
-    const senhaTemporaria = crypto.randomBytes(18).toString("base64url");
+    const senhaTemporaria = "123456";
 
-    const email = "admin-" + crypto.randomBytes(12).toString("hex") + "@primeiro-acesso.invalid";
+    const email = "primeiro@acesso.com";
 
     const hash = await gerarHashSenha(senhaTemporaria);
 
