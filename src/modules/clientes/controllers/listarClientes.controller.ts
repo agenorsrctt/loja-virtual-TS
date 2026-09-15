@@ -1,4 +1,5 @@
 import type { Request, Response } from "express";
+
 import { listarClientesService } from "../services/listarClientes.service.js";
 
 
@@ -24,7 +25,9 @@ export async function listarClientesController(req: Request, res: Response) {
                 return res.status(400).json({
                     mensagem: erro.message
                 });
+
             }
+
         }
 
         console.error("Erro ao listar cliente:", erro);

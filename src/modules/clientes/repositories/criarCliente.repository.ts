@@ -1,8 +1,11 @@
 import type { CriarClienteDTO, ClienteDTO } from "../dtos/cliente.dto.js";
+
 import db from "../../../database/connection.js";
 
 export function criarClienteRepository(dados: CriarClienteDTO, empresa_id: number): Promise<ClienteDTO> {
+
     const sql = "INSERT INTO CLIENTES(empresa_id, nome, email, telefone, status) VALUES(?, ?, ?, ?, ?)";
+
     const valores: (string | number | null)[] = [
         empresa_id,
         dados.nome,
@@ -12,9 +15,12 @@ export function criarClienteRepository(dados: CriarClienteDTO, empresa_id: numbe
     ];
 
     return new Promise<ClienteDTO>((resolve, reject) => {
+
         db.run(sql, valores, function (erro) {
+
             if (erro) {
                 return reject(erro);
+
             }
 
             resolve({
@@ -25,6 +31,9 @@ export function criarClienteRepository(dados: CriarClienteDTO, empresa_id: numbe
                 telefone: dados.telefone,
                 status: dados.status
             });
+
         });
+
     });
+
 }

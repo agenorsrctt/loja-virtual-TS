@@ -1,5 +1,7 @@
 import type { Request, Response } from "express";
+
 import type { CriarClienteDTO } from "../dtos/cliente.dto.js";
+
 import { criarClienteService } from "../services/criarCliente.service.js";
 
 
@@ -32,7 +34,9 @@ export async function criarClienteController(req: Request, res: Response) {
                 return res.status(400).json({
                     mensagem: erro.message
                 });
+
             }
+
         }
 
         console.error("Erro ao criar cliente:", erro);
