@@ -1,3 +1,5 @@
+import { primeiroAcessoController } from "../../acesso/controllers/acesso.controller.js";
+
 import express from "express";
 
 import { criarUsuarioController } from "../controllers/criarUsuarios.controller.js";
@@ -10,13 +12,15 @@ import { alterarUsuarioController } from "../controllers/alterarUsuario.controll
 
 import { loginUsuarioController } from "../controllers/loginUsuario.controller.js";
 
-import { autenticar } from "../../middleware/autenticacao.middleware.js";
+import { autenticar, autenticarPrimeiroAcesso } from "../../middleware/autenticacao.middleware.js";
 
 import { inativarUsuarioController } from "../controllers/inativarUsuario.controller.js";
 
 const routerUsuario = express.Router();
 
 routerUsuario.post("/login", loginUsuarioController )
+routerUsuario.patch("/primeiro-acesso", autenticarPrimeiroAcesso, primeiroAcessoController);
+
 routerUsuario.get("/", autenticar, listarUsuariosController);
 
 routerUsuario.get("/:id", autenticar, buscarUsuarioController);
