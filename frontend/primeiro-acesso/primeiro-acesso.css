@@ -1,0 +1,17 @@
+body { background: linear-gradient(180deg, #202873 0, #263683 230px, #f5f7fb 230px); min-height: 100dvh; }
+
+.primeiro-container { max-width: 510px; margin: auto; padding: 36px 20px; }
+
+.primeiro-container > .marca { color: white; justify-content: center; margin-bottom: 35px; }
+
+.primeiro-container > .marca small { color: #c4cef3; }
+
+.primeiro-painel { padding: 35px; box-shadow: 0 15px 45px #1a2c5310; }
+
+.primeiro-painel h1 { font-size: 28px; margin: 22px 0 12px; }
+
+.primeiro-painel .formulario { margin-top: 27px; }
+
+.primeiro-painel > .botao { margin-top: 12px; }
+
+@media (max-width: 500px) { .primeiro-painel { padding: 25px; } }
