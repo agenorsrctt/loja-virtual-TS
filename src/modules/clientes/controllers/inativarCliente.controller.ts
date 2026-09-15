@@ -2,6 +2,7 @@ import type { Request, Response } from "express";
 import { inativarClienteService } from "../services/inativarCliente.service.js";
 
 
+
 export async function inativarClienteController(req: Request, res: Response) {
 
     try {
@@ -12,22 +13,33 @@ export async function inativarClienteController(req: Request, res: Response) {
         await inativarClienteService(empresa_id, id);
 
         res.status(200).json({
-            mensagem: "Cliente inativado do sistema."
+            mensagem: "Cliente inativado com sucesso"
         })
 
+    } catch (erro) {
 
-    } catch (error) {
+        if (erro instanceof Error) {
+            if (erro.message === "Cliente não encontrado.") {
+                return res.status(404).json({
+                    mensagem: "Cliente não encontrado."
+                });
+            }
 
-        if (error instanceof Error) {
-            return res.status(500).json({
-                mensagem: "Erro do servidor: " + error.message
-            })
+            if (
+                erro.message === "Empresa inválida, tente novamente." ||
+                erro.message === "Cliente inválido, tente novamente."
+            ) {
+                return res.status(400).json({
+                    mensagem: erro.message
+                });
+            }
         }
 
-        res.status(500).json({
-            mensagem: "Erro do servidor: " 
-        })
+        console.error("Erro ao inativar cliente:", erro);
 
+        return res.status(500).json({
+            mensagem: "Erro interno do servidor."
+        });
 
     }
 

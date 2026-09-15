@@ -1,26 +1,30 @@
-import type { criarClienteDTO } from "../dtos/interfacesCliente.dto.js";
+import type { CriarClienteDTO, ClienteDTO } from "../dtos/cliente.dto.js";
 import db from "../../../database/connection.js";
 
-export function criarClienteRepository(dados: criarClienteDTO): Promise<void> {
-
-    const sql = "INSERT INTO CLIENTES(empresa_id, nome, email, telefone, status) VALUES(?,?,?,?,?)";
-
-    const valores = [
-        dados.empresa_id,
+export function criarClienteRepository(dados: CriarClienteDTO, empresa_id: number): Promise<ClienteDTO> {
+    const sql = "INSERT INTO CLIENTES(empresa_id, nome, email, telefone, status) VALUES(?, ?, ?, ?, ?)";
+    const valores: (string | number | null)[] = [
+        empresa_id,
         dados.nome,
-        dados.email,
+        dados.email ?? null,
         dados.telefone,
-        "ativo"
+        dados.status
     ];
 
-    return new Promise<void>((resolve, reject) => {
+    return new Promise<ClienteDTO>((resolve, reject) => {
         db.run(sql, valores, function (erro) {
-            if(erro){
-                return reject(new Error("Erro ao criar cliente, verifique as informações e tente novamente, Error: " + erro.message));
+            if (erro) {
+                return reject(erro);
             }
 
-            resolve();
-        })
+            resolve({
+                id: this.lastID,
+                empresa_id,
+                nome: dados.nome,
+                email: dados.email ?? null,
+                telefone: dados.telefone,
+                status: dados.status
+            });
+        });
     });
-
-};
+}
