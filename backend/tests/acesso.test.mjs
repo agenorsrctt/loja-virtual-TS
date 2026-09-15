@@ -423,13 +423,45 @@ test("superAdmin e primeiro acesso: fluxo HTTP completo", async (t) => {
 
         });
 
+        await t.test("perfil não expõe senhas e usuário troca sua própria senha", async () => {
+
+            const perfil = await requisitar("GET", "/usuarios/perfil", undefined, tokenAdmin);
+
+            assert.equal(perfil.status, 200);
+
+            assert.equal(perfil.corpo.dados.email, "novo@teste.com");
+
+            assert.equal(perfil.corpo.dados.senha, undefined);
+
+            assert.equal(perfil.corpo.dados.empresa_nome, "Nova");
+
+            const errado = await requisitar("PATCH", "/usuarios/senha", { senha_atual: "errada", nova_senha: "senha nova do perfil" }, tokenAdmin);
+
+            assert.equal(errado.status, 401);
+
+            assert.equal((await requisitar("GET", "/usuarios/perfil", undefined, tokenAdmin)).status, 200);
+
+            const troca = await requisitar("PATCH", "/usuarios/senha", { senha_atual: "senha definitiva forte", nova_senha: "senha nova do perfil", id: 1, empresa_id: 1 }, tokenAdmin);
+
+            assert.equal(troca.status, 200);
+
+            assert.equal((await requisitar("GET", "/usuarios/perfil", undefined, tokenAdmin)).status, 401);
+
+            const login = await requisitar("POST", "/usuarios/login", { empresa_id: empresa.id, email: "novo@teste.com", senha: "senha nova do perfil" });
+
+            assert.equal(login.status, 200);
+
+            tokenAdmin = login.corpo.token;
+
+        });
+
         await t.test("desativação bloqueia login e tokens já emitidos", async () => {
 
             await executar("UPDATE EMPRESAS SET status = 'inativo' WHERE id = ?", [empresa.id]);
 
             assert.equal((await requisitar("GET", "/clientes", undefined, tokenAdmin)).status, 401);
 
-            assert.equal((await requisitar("POST", "/usuarios/login", { empresa_id: empresa.id, email: "novo@teste.com", senha: "senha definitiva forte" })).status, 401);
+            assert.equal((await requisitar("POST", "/usuarios/login", { empresa_id: empresa.id, email: "novo@teste.com", senha: "senha nova do perfil" })).status, 401);
 
             await executar("UPDATE EMPRESAS SET status = 'ativo' WHERE id = ?", [empresa.id]);
 
