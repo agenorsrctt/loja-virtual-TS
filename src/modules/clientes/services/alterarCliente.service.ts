@@ -1,7 +1,8 @@
 import type { alterarClienteDTO } from "../dtos/interfacesCliente.dto.js";
+import { alterarClienteRepository } from "../repositories/alterarCliente.repository.js";
 
 
-export async function alterarClienteService(dados: alterarClienteDTO){
+export async function alterarClienteService(dados: alterarClienteDTO, empresa_id: number, id: number){
 
     if(dados.nome !== undefined) {
         if(!dados.nome) {
@@ -31,5 +32,5 @@ export async function alterarClienteService(dados: alterarClienteDTO){
         throw new Error("Cliente inválido, tente novamente.")
     }
 
-    return await alterarClienteService(dados);
+    return await alterarClienteRepository(dados, empresa_id, id);
 }

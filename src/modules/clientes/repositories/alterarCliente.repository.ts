@@ -1,7 +1,7 @@
 import db from "../../../database/connection.js";
 import type { alterarClienteDTO } from "../dtos/interfacesCliente.dto.js";
  
-export function alterarCliente(dados: alterarClienteDTO): Promise<void> {
+export function alterarClienteRepository(dados: alterarClienteDTO, empresa_id: number, id: number): Promise<void> {
     const valores: (string | number)[] = [];
     const campos: string[] = [];
 
