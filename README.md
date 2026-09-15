@@ -1,4 +1,4 @@
-# Vértice — gestão de vendas
+# ASR Systems — gestão de vendas
 
 Frontend em HTML, CSS e JavaScript modular, integrado ao backend TypeScript, Express e SQLite.
 
@@ -60,3 +60,9 @@ Os testes verificam contratos da API, autenticação, estoque, arquivos modulare
 Para testar a interface, cadastre um cliente e um produto com estoque, conclua uma venda e confira seu total e estoque. Edite a venda e depois cancele para conferir a devolução do estoque. Teste também o primeiro acesso, a troca de senha e a navegação em uma tela estreita.
 
 Consulte o [roteiro de vendas](backend/docs/testar-vendas.md) para exemplos adicionais.
+
+## Status e acesso inicial
+
+Novas vendas ficam **pendentes**. Na lista e nos detalhes, use **Marcar como pago** ou **Cancelar**. Só vendas pendentes podem ser editadas. O cancelamento devolve o estoque uma única vez; marcar como pago não altera o estoque. O dashboard soma apenas vendas pagas. Vendas antigas concluídas são migradas para pendentes para confirmação manual do pagamento.
+
+Novas empresas usam o código numérico sequencial, e-mail `primeiro@acesso.com` e senha temporária `123456`. A troca de e-mail e senha continua obrigatória no primeiro acesso; a senha definitiva continua exigindo pelo menos 12 caracteres. Contas existentes e o SuperAdmin mantêm suas credenciais.
