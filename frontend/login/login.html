@@ -1,0 +1,77 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="theme-color" content="#202873">
+    <title>Entrar | Vértice</title>
+    <link rel="icon" href="../favicon.svg">
+    <link rel="stylesheet" href="../compartilhado/estilos.css">
+    <link rel="stylesheet" href="login.css">
+    <script type="module" src="login.js">
+    </script>
+</head>
+<body class="pagina-acesso">
+    <aside class="apresentacao">
+        <a class="marca" href="login.html">
+    <span class="marca-icone" data-icon="vendas">
+    </span>
+    <span>vértice<small>gestão de vendas</small>
+    </span>
+    </a>
+        <div class="apresentacao-texto">
+    <span class="selo">SIMPLES PARA VOCÊ. MELHOR PARA SEU NEGÓCIO.</span>
+    <h1>Seu negócio,<br>no próximo nível.</h1>
+    <p>Clientes, produtos e vendas em um só lugar.<br>Mais clareza para cada decisão do seu dia.</p>
+    <div class="beneficios">
+    <span>
+    <b>01</b> Organize sua operação</span>
+    <span>
+    <b>02</b> Acompanhe seus resultados</span>
+    <span>
+    <b>03</b> Venda com confiança</span>
+    </div>
+    </div>
+        <small>Feito para acompanhar o seu crescimento.</small>
+    </aside>
+    <main class="acesso-conteudo">
+        <div class="acesso-caixa">
+            <div class="icone-caixa azul acesso-icone" data-icon="cadeado">
+    </div>
+            <h1>Que bom ter você aqui.</h1>
+            <p class="subtitulo">Entre para acompanhar seu negócio.</p>
+            <div class="abas-acesso" role="group" aria-label="Tipo de acesso">
+    <button type="button" id="aba-empresa" class="selecionado" aria-pressed="true">Minha empresa</button>
+    <button type="button" id="aba-global" aria-pressed="false">SuperAdmin</button>
+    </div>
+            <div id="aviso" class="aviso info" role="status" hidden>
+    </div>
+            <form id="login" class="formulario">
+                <div class="campo" id="campo-empresa">
+    <label for="empresa_id">Código da empresa</label>
+    <input id="empresa_id" name="empresa_id" type="number" min="1" step="1" required placeholder="Ex.: 1" autocomplete="organization">
+    </div>
+                <div class="campo">
+    <label for="email">E-mail</label>
+    <input id="email" name="email" type="email" required autocomplete="username" placeholder="voce@suaempresa.com">
+    </div>
+                <div class="campo">
+    <label for="senha">Senha</label>
+    <div class="senha-input">
+    <input id="senha" name="senha" type="password" required autocomplete="current-password" placeholder="Sua senha de acesso">
+    <button type="button" data-senha="senha" aria-label="Mostrar senha">
+    </button>
+    </div>
+    </div>
+                <div class="aviso erro" data-erro role="alert" hidden>
+    </div>
+                <button class="botao largo" type="submit">Entrar na minha conta <span data-icon="seta">
+    </span>
+    </button>
+            </form>
+            <p class="ajuda-acesso" id="ajuda">Primeiro acesso? Use as credenciais recebidas do administrador.</p>
+            <footer>Vértice <span>•</span> Seu negócio, organizado.</footer>
+        </div>
+    </main>
+</body>
+</html>
