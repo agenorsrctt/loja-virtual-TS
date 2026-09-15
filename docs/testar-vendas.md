@@ -1,0 +1,169 @@
+# Vendas e itens vendidos
+
+## Regras implementadas
+
+- A venda nasce com status `concluida`. O cancelamento muda para `cancelada`.
+- `empresa_id` e `usuario_id` vêm do token. A requisição informa `cliente_id` e `itens`.
+- Empresa, usuário e cliente precisam estar ativos para criar ou alterar uma venda.
+- Cliente e produtos devem pertencer à empresa autenticada. Produtos precisam estar ativos.
+- Cada item recebe `produto_id` e uma `quantidade` inteira positiva. Um produto só pode aparecer uma vez na lista.
+- `valor_vendido` é o **preço unitário** do produto no momento da venda, arredondado para centavos. `valor_total` é a soma de preço unitário × quantidade, calculada em centavos.
+- Preços, total, empresa, usuário, data e status enviados pelo cliente da API não substituem os valores calculados pelo servidor.
+- A criação baixa o estoque. Uma falha desfaz a venda, os itens e todas as baixas.
+- Alterar somente `cliente_id` mantém preços, itens e estoque. Alterar `itens` **substitui a lista inteira**, devolve o estoque antigo e baixa o novo, usando os preços atuais dos produtos. Os IDs antigos dos itens não devem ser reutilizados.
+- Cancelar preserva a venda, o total e os itens para consulta e devolve o estoque. Repetir o cancelamento retorna sucesso sem devolver novamente. Venda cancelada não pode ser alterada ou reativada.
+- Os itens não têm POST, PATCH ou DELETE próprios: as gravações são feitas pela venda para manter total e estoque consistentes.
+- Cada transação de venda usa uma conexão SQLite exclusiva. Isso também protege a disputa pelo último produto e cancelamentos simultâneos.
+- O esquema de `src/database/init.ts` foi mantido, sem migração ou alteração das tabelas.
+
+## Testes automatizados
+
+Na raiz do projeto, com as dependências instaladas e Node.js 24:
+
+```sh
+npm run build -- --noEmit
+npm run test:vendas
+```
+
+Os testes usam HTTP local e um banco SQLite temporário com as seis tabelas extraídas do `init.ts`. Não usam nem alteram `src/database/database.db`. Ao final, encerram as conexões e removem o banco de teste.
+
+Cobertura: autenticação, criação, total e estoque, consulta, filtro de itens, isolamento entre empresas, dados inválidos, registros inativos, rollback, alteração, cancelamento repetido e simultâneo, venda concorrente, preço histórico e resposta genérica a falhas de banco.
+
+## Preparação para teste manual
+
+Os testes manuais abaixo alteram os dados reais do ambiente em que a API estiver rodando. Use registros de teste.
+
+1. Configure `JWT_SECRET` no `.env` e inicie a API com `npm run dev`.
+2. Use uma empresa e um usuário já cadastrados e ativos. A senha deve corresponder ao hash salvo no banco.
+3. Faça login em `POST http://localhost:3000/usuarios/login`:
+
+```json
+{
+  "empresa_id": 1,
+  "email": "seu-email@exemplo.com",
+  "senha": "sua-senha"
+}
+```
+
+4. Copie o `token` da resposta. No Postman/Insomnia, selecione **Bearer Token** e cole o token. Todas as próximas rotas exigem `Authorization: Bearer SEU_TOKEN`.
+5. Para POST/PATCH, use `Content-Type: application/json`.
+6. Crie ou escolha um cliente ativo da mesma empresa. Consulte seu ID com `GET /clientes`.
+
+Exemplo de `POST /clientes`:
+
+```json
+{
+  "nome": "Cliente de teste",
+  "email": "cliente-teste@exemplo.com",
+  "telefone": "71999990000",
+  "status": "ativo"
+}
+```
+
+7. Crie dois produtos ativos da mesma empresa usando `POST /produtos`. Consulte os IDs com `GET /produtos`.
+
+Produto A:
+
+```json
+{
+  "produto": "Produto A",
+  "estoque": 10,
+  "preco": 25.5,
+  "categoria": "Teste",
+  "codigo": "TESTE-A",
+  "status": "ativo"
+}
+```
+
+Produto B: use outro nome e código, estoque **5** e preço **10**.
+
+Os IDs abaixo são exemplos: substitua pelos IDs reais do cliente e dos produtos cadastrados.
+
+## 1. Criar uma venda
+
+`POST http://localhost:3000/vendas`
+
+```json
+{
+  "cliente_id": 1,
+  "itens": [
+    { "produto_id": 1, "quantidade": 2 },
+    { "produto_id": 2, "quantidade": 1 }
+  ]
+}
+```
+
+Esperado: **201**. A resposta traz `mensagem` e `dados`, com ID da venda, empresa, usuário, cliente, data, total, status e itens completos.
+
+- Total: **61** (2 × 25,50 + 1 × 10).
+- Status: `concluida`.
+- Estoque do produto A: **8**; produto B: **4**.
+- Confira o estoque em `GET /produtos/:id` e guarde o ID retornado da venda.
+
+## 2. Consultar vendas e itens
+
+| Requisição | Resultado esperado |
+| --- | --- |
+| `GET /vendas` | Vendas da empresa autenticada, incluindo canceladas, em `dados`. |
+| `GET /vendas/ID_VENDA` | Venda com sua lista de `itens`. |
+| `GET /itens-vendidos` | Todos os itens da empresa, inclusive de vendas canceladas. |
+| `GET /itens-vendidos?venda_id=ID_VENDA` | Somente itens dessa venda. Filtro sem resultados retorna lista vazia. |
+| `GET /itens-vendidos/ID_ITEM` | Um item vendido. Use o ID do item, não o ID do produto. |
+
+## 3. Alterar a venda
+
+`PATCH /vendas/ID_VENDA`
+
+```json
+{
+  "itens": [
+    { "produto_id": 1, "quantidade": 3 }
+  ]
+}
+```
+
+Esperado: **200**, total **76,50**, estoque A **7**, estoque B **5**. O produto B sai da venda porque a lista foi substituída. Consulte novamente a venda para obter os IDs atuais dos itens.
+
+Para trocar somente o cliente, envie `{"cliente_id": OUTRO_ID_VALIDO}`. O cliente deve estar ativo e pertencer à mesma empresa; itens, preços e estoque permanecem como estavam.
+
+Se os preços dos produtos forem alterados depois de uma venda, a consulta mantém o preço histórico. Ao substituir os itens via PATCH, o servidor usa os preços atuais.
+
+## 4. Testar falhas e rollback
+
+Antes de cancelar a venda, faça estas tentativas:
+
+| Caso | HTTP esperado |
+| --- | --- |
+| Sem token, token inválido ou expirado | 401 |
+| ID inválido (`abc`, `0`, `-1`) | 400 |
+| Quantidade zero, negativa, fracionária ou texto | 400 |
+| Lista vazia, produto repetido, corpo vazio ou PATCH sem campos reconhecidos | 400 |
+| Venda/item inexistente ou pertencente a outra empresa | 404 |
+| Cliente/produto de outra empresa na criação | 404 |
+| Produto, cliente, usuário ou empresa inativos na criação/alteração | 409 |
+| Quantidade maior que o estoque disponível | 409 |
+| Alterar uma venda cancelada | 409 |
+| Banco ocupado além do tempo de espera | 409 |
+| Falha interna inesperada | 500 com mensagem genérica |
+
+Para verificar rollback, tente criar uma venda com dois itens: o primeiro válido e o segundo com quantidade **999999**. Depois do **409**, confirme que não surgiu uma venda parcial e que o estoque do primeiro produto não mudou. Repita com PATCH na venda existente: após a falha, itens, total e estoque devem continuar iguais aos anteriores.
+
+## 5. Cancelar
+
+`DELETE /vendas/ID_VENDA`
+
+Esperado: **200**, status `cancelada`, estoque A **10** e B **5**, considerando apenas a sequência deste roteiro.
+
+Repita o DELETE: deve retornar **200** e o estoque deve continuar **10** e **5**. A venda e seus itens continuam disponíveis para consulta. Um PATCH nessa venda deve retornar **409**.
+
+## Organização dos arquivos e commits
+
+- `vendas/dtos`: contratos de criação, alteração e resposta.
+- `vendas/services`: validação das entradas e chamada dos repositórios.
+- `vendas/repositories`: consultas e transações de criação, alteração e cancelamento.
+- `itens_vendidos/repositories`: preço vendido, inserção dos itens, estoque e consultas.
+- `controllers`: respostas HTTP e tratamento dos erros conhecidos.
+- `routes`: endpoints protegidos pela autenticação existente.
+- `tests/vendas.test.mjs`: testes reproduzíveis com banco temporário.
+
+Foi criado um commit individual por arquivo novo. A integração em `app.ts` e o comando de teste em `package.json` têm commits próprios. Consulte `git log --oneline` para revisar a sequência.
