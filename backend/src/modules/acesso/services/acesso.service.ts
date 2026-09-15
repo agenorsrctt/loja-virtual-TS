@@ -1,5 +1,7 @@
 import { buscarSuperAdmin, criarSuperAdmin, buscarLoginEmpresa, concluirPrimeiroAcesso, atualizarSenhaSuperAdmin } from "../repositories/acesso.repository.js";
 
+import { buscarContaEmpresa, atualizarSenhaEmpresa } from "../repositories/acesso.repository.js";
+
 import type { ContaEmpresa } from "../repositories/acesso.repository.js";
 
 import { ErroAcesso, validarObjeto, validarEmail, validarNovaSenha, emitirToken } from "../utils/acesso.util.js";
@@ -109,6 +111,36 @@ export async function alterarSenhaSuperAdminService(versao: number, dados: unkno
     }
 
     const resultado = await atualizarSenhaSuperAdmin(versao, await gerarHashSenha(dados.nova_senha));
+
+    if (resultado.alteracoes !== 1) {
+
+        throw new ErroAcesso("Sessão expirada. Faça login novamente.", 401);
+
+    }
+
+}
+
+export async function alterarSenhaEmpresaService(empresa_id: number, id: number, dados: unknown) {
+
+    validarObjeto(dados);
+
+    validarNovaSenha(dados.nova_senha);
+
+    const conta = await buscarContaEmpresa(empresa_id, id);
+
+    if (!conta || conta.primeiro_acesso || conta.status !== "ativo" || conta.empresa_status !== "ativo" || typeof dados.senha_atual !== "string" || !await verificarSenha(dados.senha_atual, conta.senha)) {
+
+        throw new ErroAcesso("Senha atual ou sessão inválida.", 401);
+
+    }
+
+    if (await verificarSenha(dados.nova_senha, conta.senha)) {
+
+        throw new ErroAcesso("A nova senha deve ser diferente da atual.", 400);
+
+    }
+
+    const resultado = await atualizarSenhaEmpresa(conta, await gerarHashSenha(dados.nova_senha));
 
     if (resultado.alteracoes !== 1) {
 
