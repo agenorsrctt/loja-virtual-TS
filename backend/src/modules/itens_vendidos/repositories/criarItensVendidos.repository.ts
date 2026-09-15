@@ -1,4 +1,4 @@
-import type sqlite3 from "sqlite3";
+import type { ConexaoBanco } from "../../../database/conexaoBanco.js";
 
 import type { CriarItemVendidoDTO } from "../dtos/itemVendido.dto.js";
 
@@ -6,7 +6,7 @@ import { buscarSQL, executarSQL } from "../../vendas/repositories/transacaoVenda
 
 import { ErroVenda } from "../../vendas/utils/erroVenda.util.js";
 
-export async function criarItensVendidosRepository(conexao: sqlite3.Database, itens: CriarItemVendidoDTO[], empresa_id: number, venda_id: number): Promise<number> {
+export async function criarItensVendidosRepository(conexao: ConexaoBanco, itens: CriarItemVendidoDTO[], empresa_id: number, venda_id: number): Promise<number> {
 
     let totalCentavos = 0;
 
