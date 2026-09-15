@@ -8,7 +8,12 @@
     "test:vendas": "npm --prefix backend run test:vendas",
     "test:acesso": "npm --prefix backend run test:acesso",
     "criar-superadmin": "npm --prefix backend run criar-superadmin",
-    "test:frontend": "npm --prefix backend run test:frontend"
+    "test:frontend": "npm --prefix backend run test:frontend",
+    "build:vercel": "npm --prefix backend run build:vercel",
+    "preparar:turso": "npm --prefix backend run preparar:turso",
+    "criar-superadmin:turso": "npm --prefix backend run criar-superadmin:turso",
+    "test:turso": "npm --prefix backend run test:turso",
+    "test:publicacao": "npm --prefix backend run test:publicacao"
   },
   "type": "module"
 }
