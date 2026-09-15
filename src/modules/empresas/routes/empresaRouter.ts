@@ -4,14 +4,15 @@ import { listarEmpresasController } from '../controllers/listarEmpresa.controlle
 import { buscarEmpresaController } from '../controllers/buscarEmpresa.controller.js';
 import { alterarEmpresaController } from '../controllers/alterarEmpresa.controller.js';
 import { invativarEmpresaController } from '../controllers/invativarEmpresa.controller.js';
+import { autenticar } from '../../middleware/jwt.js';
 
 const empresaRouter = express.Router();
 
-empresaRouter.get("/", listarEmpresasController);
-empresaRouter.get("/:id", buscarEmpresaController);
-empresaRouter.post("/", criarEmpresaController);
-empresaRouter.patch("/:id", alterarEmpresaController);
-empresaRouter.delete("/:id", invativarEmpresaController);
+empresaRouter.get("/", autenticar , listarEmpresasController);
+empresaRouter.get("/:id", autenticar , buscarEmpresaController);
+empresaRouter.post("/", autenticar , criarEmpresaController);
+empresaRouter.patch("/:id", autenticar , alterarEmpresaController);
+empresaRouter.delete("/:id", autenticar , invativarEmpresaController);
 
 console.log("Empresa Routes iniciado!");
 
