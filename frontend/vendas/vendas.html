@@ -1,0 +1,59 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#202873">
+  <title>Vendas | Vértice</title>
+  <link rel="icon" href="../favicon.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="../compartilhado/estilos.css">
+  <link rel="stylesheet" href="./vendas.css">
+  <script type="module" src="./vendas.js">
+    </script>
+</head>
+<body>
+  <a class="sr-only" href="#principal">Ir para o conteúdo</a>
+  <div id="navegacao">
+    </div>
+  <main class="conteudo" id="principal">
+    <div class="cabecalho-pagina">
+    <div>
+    <h1>Vendas</h1>
+    <p>Cada venda, cada detalhe. Tudo em um só lugar.</p>
+    </div>
+    <a class="botao" href="../nova-venda/nova-venda.html">
+    <span data-icon="mais">
+    </span> Nova venda</a>
+    </div>
+    <section class="painel">
+    <div class="filtros">
+    <label class="busca">
+    <span data-icon="busca">
+    </span>
+    <span class="sr-only">Buscar venda ou cliente</span>
+    <input id="busca" placeholder="Buscar pelo número ou cliente…" type="search">
+    </label>
+    <label>
+    <span class="sr-only">Status</span>
+    <select id="status">
+    <option value="">Todos os status</option>
+    <option value="concluida">Concluídas</option>
+    <option value="cancelada">Canceladas</option>
+    </select>
+    </label>
+    <label>
+    <span class="sr-only">Período</span>
+    <select id="periodo">
+    <option value="">Todo o período</option>
+    <option value="hoje">Hoje</option>
+    <option value="mes">Este mês</option>
+    </select>
+    </label>
+    </div>
+    <div id="lista-vendas">
+    <div class="carregando">Carregando vendas</div>
+    </div>
+    </section>
+    </main>
+</body>
+</html>
