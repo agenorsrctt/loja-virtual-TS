@@ -7,7 +7,7 @@ export function buscarEmailUsuarioRepository(email: string, empresa_id: number):
 
     const sql = "SELECT * FROM USUARIOS WHERE email = ? AND empresa_id = ?";
 
-    return new Promise<UsuarioDto>((resolve, reject) => {
+    return new Promise<UsuarioDto | undefined>((resolve, reject) => {
 
         db.get<UsuarioDto>(sql, [email, empresa_id], (erro, usuario) => {
 
