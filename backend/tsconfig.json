@@ -10,6 +10,8 @@
     "module": "nodenext",
     "target": "esnext",
     "types": ["node"],
+    // Mantém os tipos locais acessíveis ao tsconfig temporário da Vercel.
+    "typeRoots": ["./node_modules/@types"],
     // For nodejs:
     // "lib": ["esnext"],
     // "types": ["node"],
