@@ -15,7 +15,7 @@ export function criarVendaRepository(dados: CriarVendaDTO, empresa_id: number, u
         await validarParticipantesVendaRepository(conexao, empresa_id, usuario_id, dados.cliente_id);
 
         const venda = await executarSQL(conexao,
-            "INSERT INTO VENDAS(empresa_id, usuario_id, cliente_id, valor_total, status) VALUES(?, ?, ?, 0, 'concluida')",
+            "INSERT INTO VENDAS(empresa_id, usuario_id, cliente_id, valor_total, status) VALUES(?, ?, ?, 0, 'pendente')",
             [empresa_id, usuario_id, dados.cliente_id]);
 
         const total = await criarItensVendidosRepository(conexao, dados.itens, empresa_id, venda.id);
