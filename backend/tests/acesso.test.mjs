@@ -316,6 +316,10 @@ test("superAdmin e primeiro acesso: fluxo HTTP completo", async (t) => {
 
             const usuario = await buscar("SELECT * FROM USUARIOS WHERE id = ?", [empresa.administrador.id]);
 
+            assert.equal(empresa.administrador.email, "primeiro@acesso.com");
+
+            assert.equal(empresa.administrador.senha_temporaria, "123456");
+
             assert.notEqual(usuario.senha, empresa.administrador.senha_temporaria);
 
             assert.ok(await require("bcrypt").compare(empresa.administrador.senha_temporaria, usuario.senha));
