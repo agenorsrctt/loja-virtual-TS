@@ -1,0 +1,15 @@
+.pwa-ferramentas { display: flex; flex-wrap: wrap; gap: 10px; align-items: center; margin: 0 0 20px; }
+
+.pwa-ferramentas button { border: 1px solid #d8e1f7; border-radius: 10px; padding: 10px 14px; background: #edf2ff; color: #202873; font: inherit; cursor: pointer; }
+
+.pwa-ferramentas [hidden] { display: none; }
+
+.pwa-ferramentas [role="status"] { flex-basis: 100%; color: #946000; }
+
+.pwa-dialogo { max-width: 440px; width: calc(100% - 40px); border: 1px solid #e7ecf3; border-radius: 20px; padding: 26px; color: #172033; }
+
+.pwa-dialogo::backdrop { background: #17203380; }
+
+.pwa-dialogo p { margin: 16px 0; line-height: 1.6; }
+
+.pwa-dialogo button { padding: 12px 20px; border: 0; border-radius: 10px; background: #2854ed; color: white; font: inherit; cursor: pointer; }
