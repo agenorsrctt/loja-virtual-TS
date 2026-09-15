@@ -2,7 +2,7 @@
 
 ## 1. Criar seu único superAdmin
 
-Na raiz do projeto, configure o `.env` com valores escolhidos por você:
+Na nova estrutura, configure `backend/.env` com valores escolhidos por você. Os comandos abaixo podem ser executados na raiz do repositório:
 
 ```dotenv
 JWT_SECRET="seu-segredo-aleatorio-longo"
