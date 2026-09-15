@@ -1,4 +1,4 @@
-import { gerarHash } from "../../middleware/bcrypt.js";
+import { gerarHashSenha } from "../../middleware/senha.util.js";
 import type { CriarUsuarioDto } from "../dtos/interfacesUsuario.js";
 import type { Tipo } from "../dtos/typesUsuario.js";
 import { criarUsuarioRepository } from "../repositories/criarUsuario.repository.js";
@@ -30,7 +30,7 @@ export async function criarUsuariosService(dados: CriarUsuarioDto, tipo: Tipo, e
         throw new Error("Empresa inválida, tente novamente.");
     }
 
-    const senhaHash = await gerarHash(dados.senha);
+    const senhaHash = await gerarHashSenha(dados.senha);
     const usuario = {
         ...dados,
         senha: senhaHash

@@ -1,4 +1,4 @@
-import { gerarHash } from "../../middleware/bcrypt.js";
+import { gerarHashSenha } from "../../middleware/senha.util.js";
 import type { AlterarUsuarioDto } from "../dtos/interfacesUsuario.js";
 import type { Tipo } from "../dtos/typesUsuario.js";
 import { alterarUsuarioRepository } from "../repositories/alterarUsuario.repository.js";
@@ -41,7 +41,7 @@ export async function alterarUsuarioService(dados: AlterarUsuarioDto, empresa_id
     }
 
     if (dados.senha) {
-        dados.senha = await gerarHash(dados.senha);
+        dados.senha = await gerarHashSenha(dados.senha);
     }
 
     return await alterarUsuarioRepository(dados, empresa_id, id);

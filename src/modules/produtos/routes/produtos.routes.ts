@@ -1,5 +1,5 @@
 ﻿import express from "express";
-import { autenticar } from "../../middleware/jwt.js";
+import { autenticar } from "../../middleware/autenticacao.middleware.js";
 import { criarProdutoController } from "../controllers/criarProduto.controller.js";
 import { listarProdutoController } from "../controllers/listarProduto.controller.js";
 import { buscarProdutoController } from "../controllers/buscarProduto.controller.js";

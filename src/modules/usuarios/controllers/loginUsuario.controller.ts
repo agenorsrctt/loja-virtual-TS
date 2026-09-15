@@ -1,5 +1,5 @@
-import { compararHash } from "../../middleware/bcrypt.js";
-import { gerarToken } from "../../middleware/jwt.js";
+import { verificarSenha } from "../../middleware/senha.util.js";
+import { gerarToken } from "../../middleware/autenticacao.middleware.js";
 import { buscarEmailUsuarioService } from "../services/buscarEmailUsuario.repository.js";
 import type { Request, Response } from "express";
 
@@ -18,7 +18,7 @@ export async function loginUsuarioController(req: Request, res: Response) {
             throw new Error("E-mail ou senha inválidos.");
         };
 
-        const senhaValida = await compararHash(senha, usuario.senha);
+        const senhaValida = await verificarSenha(senha, usuario.senha);
 
         if (!senhaValida) {
             throw new Error("E-mail ou senha inválidos.");
