@@ -14,13 +14,15 @@ import path from 'node:path';
 
 import express from 'express';
 
+import { runInNewContext } from 'node:vm';
+
 import { esc, dinheiro, dataVenda, etiqueta } from '../../frontend/compartilhado/interface.js';
 
 import { api, salvarSessao, registros, protegerPagina } from '../../frontend/compartilhado/api.js';
 
 const frontend = fileURLToPath(new URL('../../frontend/', import.meta.url));
 
-const paginas = ['login', 'primeiro-acesso', 'dashboard', 'clientes', 'produtos', 'usuarios', 'empresas', 'vendas', 'nova-venda', 'detalhes-venda', 'venda-concluida', 'perfil'];
+const paginas = ['login', 'primeiro-acesso', 'dashboard', 'clientes', 'produtos', 'usuarios', 'empresas', 'vendas', 'nova-venda', 'detalhes-venda', 'venda-concluida', 'perfil', 'offline'];
 
 test('todas as páginas têm HTML, CSS e JavaScript próprios e referências válidas', async () => {
 
@@ -107,6 +109,12 @@ test('arquivos são servidos por HTTP com tipos corretos sem expor o backend', a
         }
 
         assert.match((await fetch(base + '/app/compartilhado/api.js')).headers.get('content-type'), /javascript/);
+
+        assert.match((await fetch(base + '/app/manifest.webmanifest')).headers.get('content-type'), /manifest\+json/);
+
+        assert.match((await fetch(base + '/app/service-worker.js')).headers.get('content-type'), /javascript/);
+
+        assert.match((await fetch(base + '/app/icones/icone-192.png')).headers.get('content-type'), /image\/png/);
 
         assert.equal((await fetch(base + '/app/.env')).status, 404);
 
@@ -201,5 +209,210 @@ test('cliente HTTP usa token, trata expiração e preserva sessão na senha inco
         globalThis.location = originalLocation;
 
     }
+
+});
+
+
+test('manifesto, ícones e páginas permitem instalar ASR Systems', async () => {
+
+    const manifesto = JSON.parse(await readFile(path.join(frontend, 'manifest.webmanifest'), 'utf8'));
+
+    assert.equal(manifesto.name, 'ASR Systems');
+
+    assert.equal(manifesto.display, 'standalone');
+
+    assert.equal(manifesto.scope, '/app/');
+
+    assert.ok(manifesto.start_url.startsWith(manifesto.scope));
+
+    for (const tamanho of ['192x192', '512x512']) {
+
+        assert.ok(manifesto.icons.some(icone => icone.sizes === tamanho && icone.purpose === 'any'));
+
+    }
+
+    assert.ok(manifesto.icons.some(icone => icone.purpose === 'maskable'));
+
+    for (const icone of [...manifesto.icons, { src: 'icones/icone-180.png', sizes: '180x180' }]) {
+
+        const png = await readFile(path.join(frontend, icone.src));
+
+        assert.equal(png.subarray(1, 4).toString(), 'PNG');
+
+        assert.equal(png.readUInt32BE(16) + 'x' + png.readUInt32BE(20), icone.sizes);
+
+    }
+
+    for (const pagina of paginas) {
+
+        const html = await readFile(path.join(frontend, pagina, pagina + '.html'), 'utf8');
+
+        assert.ok(html.includes('rel="manifest" href="/app/manifest.webmanifest"'));
+
+        assert.match(html, /rel="apple-touch-icon"/);
+
+        if (pagina !== 'offline') assert.ok(html.includes('src="/app/compartilhado/pwa.js"'));
+
+    }
+
+    execFileSync(process.execPath, ['--check', path.join(frontend, 'service-worker.js')]);
+
+});
+
+async function simularWorker() {
+
+    const eventos = {};
+
+    const armazenados = new Map();
+
+    const removidos = [];
+
+    let ativacoes = 0;
+
+    let assumir = 0;
+
+    let conectado = true;
+
+    const cache = {
+
+        async addAll(arquivos) {
+
+            for (const arquivo of arquivos) {
+
+                assert.ok(existsSync(path.join(frontend, arquivo.replace('/app/', ''))));
+
+                armazenados.set(arquivo, new Response(arquivo));
+
+            }
+
+        },
+
+        async match(requisicao) {
+
+            const chave = typeof requisicao === 'string' ? requisicao : new URL(requisicao.url).pathname;
+
+            return armazenados.get(chave)?.clone();
+
+        },
+
+    };
+
+    runInNewContext(await readFile(path.join(frontend, 'service-worker.js'), 'utf8'), {
+
+        URL, Response,
+
+        self: {
+
+            location: { origin: 'https://asr.test' },
+
+            clients: { async claim() { assumir++; } },
+
+            async skipWaiting() { ativacoes++; },
+
+            addEventListener(nome, funcao) { eventos[nome] = funcao; },
+
+        },
+
+        caches: {
+
+            async open() { return cache; },
+
+            async keys() { return ['asr-pwa-v0', 'asr-pwa-v1', 'outro-app']; },
+
+            async delete(nome) { removidos.push(nome); },
+
+        },
+
+        async fetch() {
+
+            if (!conectado) throw new Error('offline');
+
+            return new Response('rede');
+
+        },
+
+    });
+
+    async function ciclo(nome, dados = {}) {
+
+        let promessa;
+
+        eventos[nome]({ ...dados, waitUntil(valor) { promessa = valor; } });
+
+        await promessa;
+
+    }
+
+    function requisitar(caminho, { method = 'GET', mode = 'cors', headers = {} } = {}) {
+
+        let resposta;
+
+        eventos.fetch({ request: { url: new URL(caminho, 'https://asr.test').href, method, mode, headers: new Headers(headers) }, respondWith(valor) { resposta = valor; } });
+
+        return resposta;
+
+    }
+
+    return { ciclo, requisitar, armazenados, removidos, desconectar() { conectado = false; }, get ativacoes() { return ativacoes; }, get assumir() { return assumir; } };
+
+}
+
+test('PWA instala apenas tela offline, preserva outros caches e atualiza mediante ação', async () => {
+
+    const worker = await simularWorker();
+
+    await worker.ciclo('install');
+
+    assert.equal(worker.armazenados.size, 4);
+
+    assert.equal(worker.ativacoes, 0);
+
+    await worker.ciclo('activate');
+
+    assert.deepEqual(worker.removidos, ['asr-pwa-v0']);
+
+    assert.equal(worker.assumir, 1);
+
+    await worker.ciclo('message', { data: { tipo: 'IGNORAR' } });
+
+    assert.equal(worker.ativacoes, 0);
+
+    await worker.ciclo('message', { data: { tipo: 'ATUALIZAR' } });
+
+    assert.equal(worker.ativacoes, 1);
+
+});
+
+test('PWA não intercepta API nem escritas e oferece fallback para navegação offline', async () => {
+
+    const worker = await simularWorker();
+
+    await worker.ciclo('install');
+
+    for (const rota of ['/vendas', '/usuarios/perfil', '/usuarios/login', '/administracao/perfil', '/clientes', '/produtos', '/empresas']) {
+
+        assert.equal(worker.requisitar(rota), undefined);
+
+        assert.equal(worker.requisitar(rota, { method: 'POST' }), undefined);
+
+    }
+
+    assert.equal(worker.requisitar('/app/login/login.html', { method: 'POST' }), undefined);
+
+    assert.equal(worker.requisitar('/app/offline/offline.css', { headers: { Authorization: 'Bearer teste' } }), undefined);
+
+    assert.equal(worker.requisitar('https://outro.test/app/offline/offline.css'), undefined);
+
+    assert.equal(await (await worker.requisitar('/app/vendas/vendas.html', { mode: 'navigate' })).text(), 'rede');
+
+    worker.desconectar();
+
+    assert.equal(await (await worker.requisitar('/app/vendas/vendas.html?id=1', { mode: 'navigate' })).text(), '/app/offline/offline.html');
+
+    assert.equal(await (await worker.requisitar('/app/offline/offline.css')).text(), '/app/offline/offline.css');
+
+    assert.equal(worker.requisitar('/app/compartilhado/api.js'), undefined);
+
+    assert.equal(worker.armazenados.size, 4);
 
 });
