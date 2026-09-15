@@ -1,5 +1,7 @@
 import rotasAdministracao from "./modules/acesso/routes/administracao.routes.js";
 
+import { fileURLToPath } from "node:url";
+
 import express from 'express';
 
 import { bancoPronto } from './database/init.js';
@@ -17,6 +19,12 @@ import rotasVendas from './modules/vendas/routes/vendas.routes.js';
 import rotasItensVendidos from './modules/itens_vendidos/routes/itensVendidos.routes.js';
 
 const app = express();
+
+app.disable("x-powered-by");
+
+app.use("/app", express.static(fileURLToPath(new URL("../../frontend/", import.meta.url))));
+
+app.get("/", (_req, res) => res.redirect("/app/login/login.html"));
 
 app.use(express.json());
 
