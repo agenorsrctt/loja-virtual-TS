@@ -7,6 +7,12 @@ import rotasClientes from './modules/clientes/routes/clientes.routes.js';
 
 import routerUsuario from './modules/usuarios/routes/usuarios.routes.js';
 
+import rotasProdutos from './modules/produtos/routes/produtos.routes.js';
+
+import rotasVendas from './modules/vendas/routes/vendas.routes.js';
+
+import rotasItensVendidos from './modules/itens_vendidos/routes/itensVendidos.routes.js';
+
 const app = express();
 
 app.use(express.json());
@@ -24,6 +30,12 @@ console.log("Rota /clientes iniciada.");
 app.use("/usuarios", routerUsuario);
 
 console.log("Rota /usuarios iniciada.");
+
+app.use("/produtos", rotasProdutos);
+
+app.use("/vendas", rotasVendas);
+
+app.use("/itens-vendidos", rotasItensVendidos);
 
 
 export default app;
