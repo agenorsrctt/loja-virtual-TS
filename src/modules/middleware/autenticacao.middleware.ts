@@ -5,6 +5,7 @@ import type { TokenUsuarioDto } from "../usuarios/dtos/interfacesUsuario.js";
 import type { NextFunction, Request, Response } from "express";
 
 function usuarioValido(dados: unknown): dados is TokenUsuarioDto {
+
     if (!dados || typeof dados !== "object" || Array.isArray(dados)) {
         return false;
 
@@ -22,6 +23,7 @@ function usuarioValido(dados: unknown): dados is TokenUsuarioDto {
 }
 
 function obterSegredoToken(): string {
+
     const segredo = process.env.JWT_SECRET;
 
     if (!segredo || !segredo.trim()) {
@@ -34,6 +36,7 @@ function obterSegredoToken(): string {
 }
 
 export function gerarToken(usuario: TokenUsuarioDto): string {
+
     const segredo = obterSegredoToken();
 
     if (!usuarioValido(usuario)) {
@@ -50,6 +53,7 @@ export function gerarToken(usuario: TokenUsuarioDto): string {
 }
 
 export function autenticar(req: Request, res: Response, proximo: NextFunction) {
+
     const autorizacao = req.headers.authorization;
 
     const credenciais = typeof autorizacao === "string"
