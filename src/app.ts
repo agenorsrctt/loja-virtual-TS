@@ -1,6 +1,9 @@
+import rotasAdministracao from "./modules/acesso/routes/administracao.routes.js";
+
 import express from 'express';
 
-import './database/init.js'
+import { bancoPronto } from './database/init.js';
+
 import rotasEmpresas from './modules/empresas/routes/empresas.routes.js';
 
 import rotasClientes from './modules/clientes/routes/clientes.routes.js';
@@ -16,6 +19,24 @@ import rotasItensVendidos from './modules/itens_vendidos/routes/itensVendidos.ro
 const app = express();
 
 app.use(express.json());
+
+app.use(async (_req, res, proximo) => {
+
+    try {
+
+        await bancoPronto;
+
+        proximo();
+
+    } catch {
+
+        res.status(503).json({ mensagem: "Banco indisponível." });
+
+    }
+
+});
+
+app.use("/administracao", rotasAdministracao);
 
 console.log("App iniciado com sucesso!");
 
