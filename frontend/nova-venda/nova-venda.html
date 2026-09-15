@@ -1,0 +1,48 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#202873">
+  <title>Nova venda | Vértice</title>
+  <link rel="icon" href="../favicon.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="../compartilhado/estilos.css">
+  <link rel="stylesheet" href="./nova-venda.css">
+  <script type="module" src="./nova-venda.js">
+    </script>
+</head>
+<body>
+  <a class="sr-only" href="#principal">Ir para o conteúdo</a>
+  <div id="navegacao">
+    </div>
+  <main class="conteudo" id="principal">
+    <a class="voltar" href="../vendas/vendas.html">
+    <span data-icon="voltar">
+    </span> Voltar para vendas</a>
+    <div class="cabecalho-pagina">
+    <div>
+    <h1 id="titulo-venda">Vamos fazer uma venda?</h1>
+    <p>Escolha o cliente, adicione os produtos e confirme.</p>
+    </div>
+    <span class="etiqueta azul">VENDA ASSISTIDA</span>
+    </div>
+    <ol class="etapas" aria-label="Etapas da venda">
+    <li data-etapa="1">
+    <span>1</span> Cliente</li>
+    <li data-etapa="2">
+    <span>2</span> Produtos</li>
+    <li data-etapa="3">
+    <span>3</span> Resumo</li>
+    </ol>
+    <div id="erro-venda" class="aviso erro" role="alert" hidden>
+    </div>
+    <div class="grade venda-layout">
+    <section class="painel" id="etapa-conteudo">
+    <div class="carregando">Preparando sua venda</div>
+    </section>
+    <aside class="painel resumo-carrinho" id="carrinho">
+    </aside>
+    </div>
+    </main>
+</body>
+</html>
