@@ -22,7 +22,19 @@ const app = express();
 
 app.disable("x-powered-by");
 
-app.use("/app", express.static(fileURLToPath(new URL("../../frontend/", import.meta.url))));
+app.use("/app", express.static(fileURLToPath(new URL("../../frontend/", import.meta.url)), {
+
+    setHeaders(res, arquivo) {
+
+        if (arquivo.endsWith("service-worker.js") || arquivo.endsWith("manifest.webmanifest")) {
+
+            res.setHeader("Cache-Control", "no-cache");
+
+        }
+
+    },
+
+}));
 
 app.get("/", (_req, res) => res.redirect("/app/login/login.html"));
 
