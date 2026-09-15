@@ -1,0 +1,53 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="theme-color" content="#202873">
+    <title>Primeiro acesso | Vértice</title>
+    <link rel="icon" href="../favicon.svg">
+    <link rel="stylesheet" href="../compartilhado/estilos.css">
+    <link rel="stylesheet" href="primeiro-acesso.css">
+    <script type="module" src="primeiro-acesso.js">
+    </script>
+</head>
+<body>
+    <main class="primeiro-container">
+        <a class="marca" href="../login/login.html">
+    <span class="marca-icone" data-icon="vendas">
+    </span>
+    <span>vértice<small>gestão de vendas</small>
+    </span>
+    </a>
+        <section class="painel primeiro-painel">
+            <span class="icone-caixa azul" data-icon="cadeado">
+    </span>
+            <h1>Agora, a conta é sua.</h1>
+            <p class="muted">Troque o e-mail e a senha temporários para liberar o acesso à sua empresa.</p>
+            <form id="primeiro" class="formulario">
+                <div class="campo">
+    <label for="novo_email">Seu novo e-mail</label>
+    <input name="novo_email" id="novo_email" type="email" required autocomplete="username" placeholder="voce@suaempresa.com">
+    </div>
+                <div class="campo">
+    <label for="nova_senha">Sua nova senha</label>
+    <div class="senha-input">
+    <input name="nova_senha" id="nova_senha" type="password" minlength="12" required autocomplete="new-password">
+    <button type="button" data-senha="nova_senha" aria-label="Mostrar senha">
+    </button>
+    </div>
+    <small>Use ao menos 12 caracteres e no máximo 72 bytes.</small>
+    </div>
+                <div class="campo">
+    <label for="confirmar">Confirme a nova senha</label>
+    <input name="confirmar" id="confirmar" type="password" required autocomplete="new-password">
+    </div>
+                <div class="aviso erro" data-erro role="alert" hidden>
+    </div>
+                <button class="botao largo" type="submit">Salvar e liberar minha conta</button>
+            </form>
+            <button class="botao fantasma largo" id="sair">Voltar para o login</button>
+        </section>
+    </main>
+</body>
+</html>
