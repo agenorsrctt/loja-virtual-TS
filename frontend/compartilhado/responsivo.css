@@ -1,0 +1,51 @@
+@media (max-width: 1100px) {
+    body .lateral { width: 200px; padding: 25px 14px; }
+    body .topo, body .conteudo { margin-left: 200px; }
+    body .conteudo { padding: 25px; }
+    body .topo { padding: 0 25px; }
+    body .duas-colunas { grid-template-columns: 1fr; }
+    body .metricas { gap: 12px; }
+    body .metrica { padding: 17px; }
+}
+
+@media (max-width: 760px) {
+    body .lateral { display: none; }
+    body .topo { margin-left: 0; padding: 0 22px; height: 72px; background: var(--azul-escuro); color: white; border: 0; }
+    body .topo-caminho { color: #b5bde6; }
+    body .topo-caminho strong { color: white; }
+    body .topo-data { display: none; }
+    body .conteudo { margin-left: 0; padding: 24px 18px 110px; }
+    body .cabecalho-pagina { align-items: flex-start; gap: 14px; margin-bottom: 22px; }
+    body .cabecalho-pagina h1 { font-size: 27px; }
+    body .cabecalho-pagina p { font-size: 12px; }
+    body .cabecalho-pagina > .botao { padding: 10px 12px; font-size: 12px; white-space: nowrap; }
+    body .metricas { grid-template-columns: 1fr 1fr; gap: 12px; }
+    body .metrica { padding: 18px; }
+    body .metrica strong { font-size: 23px; }
+    body .metrica p { font-size: 12px; }
+    body .metrica .icone-caixa { margin-bottom: 14px; }
+    body .painel { padding: 19px; border-radius: 17px; }
+    body .mobile-nav { display: flex; justify-content: space-around; position: fixed; bottom: 0; left: 0; right: 0; background: #fffffffa; backdrop-filter: blur(14px); border-top: 1px solid var(--borda); padding: 9px 6px max(10px, env(safe-area-inset-bottom)); z-index: 30; }
+    body .mobile-nav a { display: grid; justify-items: center; gap: 4px; font-size: 10px; color: #8a93a4; min-width: 50px; padding: 4px; }
+    body .mobile-nav a.ativo { color: var(--azul); font-weight: 650; }
+    body .acoes-rapidas { gap: 8px; }
+    body .acao-rapida { padding: 14px 3px; font-size: 10px; border: 0; background: #f7f9fd; }
+    body .paginacao small { font-size: 10px; }
+    body .paginacao .botao { font-size: 11px; padding: 8px 12px; }
+    body .tabela-responsiva thead { display: none; }
+    body .tabela-responsiva tbody, body .tabela-responsiva tr, body .tabela-responsiva td { display: block; }
+    body .tabela-responsiva tr { padding: 13px 0; border-bottom: 1px solid var(--borda); }
+    body .tabela-responsiva td { border: 0; padding: 5px 0; display: flex; gap: 12px; justify-content: space-between; align-items: center; }
+    body .tabela-responsiva td::before { content: attr(data-label); color: var(--suave); font-size: 11px; }
+    body .tabela-responsiva td:first-child { font-size: 15px; }
+    body .tabela-responsiva td:first-child::before, body .tabela-responsiva td:last-child::before { display: none; }
+    body .tabela-responsiva td:last-child { justify-content: flex-end; padding-top: 8px; }
+    body .filtros { gap: 10px; }
+    body .filtros .busca { min-width: 100%; }
+    body .filtros select { flex: 1; }
+    body .toast { bottom: 88px; right: 15px; }
+    body .campos-duplos { grid-template-columns: 1fr; }
+    body .linha { gap: 8px; }
+    body .linha-inicio { gap: 9px; }
+    body .linha-fim { max-width: 45%; }
+}
