@@ -216,7 +216,7 @@ test("vendas e itens vendidos: integração HTTP e transações isoladas", async
 
         await t.test("criação calcula preços, total e estoque sem aceitar IDs e valores forjados", async () => {
 
-            const resposta = await requisitar("POST", "/vendas", { ...dadosVenda, empresa_id: 2, usuario_id: 2, valor_total: 1, status: "cancelada" });
+            const resposta = await requisitar("POST", "/vendas", { ...dadosVenda, empresa_id: 2, usuario_id: 2, valor_total: 1, status: "cancelado" });
 
             assert.equal(resposta.status, 201);
 
@@ -226,7 +226,7 @@ test("vendas e itens vendidos: integração HTTP e transações isoladas", async
 
             assert.equal(venda.usuario_id, 1);
 
-            assert.equal(venda.status, "concluida");
+            assert.equal(venda.status, "pendente");
 
             assert.equal(venda.valor_total, 20.6);
 
@@ -364,7 +364,7 @@ test("vendas e itens vendidos: integração HTTP e transações isoladas", async
 
             assert.equal((await buscar("SELECT estoque FROM PRODUTOS WHERE id = 1")).estoque, 10);
 
-            assert.equal((await requisitar("GET", `/vendas/${venda.id}`)).corpo.dados.status, "cancelada");
+            assert.equal((await requisitar("GET", `/vendas/${venda.id}`)).corpo.dados.status, "cancelado");
 
             assert.equal((await requisitar("PATCH", `/vendas/${venda.id}`, { cliente_id: 1 })).status, 409);
 
@@ -415,6 +415,58 @@ test("vendas e itens vendidos: integração HTTP e transações isoladas", async
                 await executar("DROP TRIGGER falha_item");
 
             }
+
+        });
+
+        await t.test("pagamento é isolado, idempotente e cancelamento devolve estoque uma única vez", async () => {
+
+            const estoque = (await buscar("SELECT estoque FROM PRODUTOS WHERE id = 1")).estoque;
+
+            const criada = await requisitar("POST", "/vendas", { cliente_id: 1, itens: [{ produto_id: 1, quantidade: 1 }] });
+
+            assert.equal(criada.status, 201);
+
+            const id = criada.corpo.dados.id;
+
+            assert.equal((await requisitar("PATCH", `/vendas/${id}/pagar`, {}, 2)).status, 404);
+
+            assert.equal((await requisitar("PATCH", `/vendas/${id}/pagar`)).corpo.dados.status, "pago");
+
+            assert.equal((await requisitar("PATCH", `/vendas/${id}/pagar`)).corpo.dados.status, "pago");
+
+            assert.equal((await buscar("SELECT estoque FROM PRODUTOS WHERE id = 1")).estoque, estoque - 1);
+
+            assert.equal((await requisitar("PATCH", `/vendas/${id}`, dadosVenda)).status, 409);
+
+            assert.equal((await requisitar("DELETE", `/vendas/${id}`)).corpo.dados.status, "cancelado");
+
+            await requisitar("DELETE", `/vendas/${id}`);
+
+            assert.equal((await buscar("SELECT estoque FROM PRODUTOS WHERE id = 1")).estoque, estoque);
+
+            assert.equal((await requisitar("PATCH", `/vendas/${id}/pagar`)).status, 409);
+
+        });
+
+        await t.test("migração converte status antigos e pode ser repetida", async () => {
+
+            await executar("UPDATE VENDAS SET status = 'concluida' WHERE id = ?", [venda.id]);
+
+            const migracaoStatus = await carregar(path.join(raiz, "src/database/migrarStatusVendas.ts"));
+
+            await migracaoStatus.evaluate();
+
+            await migracaoStatus.namespace.migrarStatusVendas();
+
+            assert.equal((await buscar("SELECT status FROM VENDAS WHERE id = ?", [venda.id])).status, "pendente");
+
+            await executar("UPDATE VENDAS SET status = 'cancelada' WHERE id = ?", [venda.id]);
+
+            await migracaoStatus.namespace.migrarStatusVendas();
+
+            await migracaoStatus.namespace.migrarStatusVendas();
+
+            assert.equal((await buscar("SELECT status FROM VENDAS WHERE id = ?", [venda.id])).status, "cancelado");
 
         });
 
