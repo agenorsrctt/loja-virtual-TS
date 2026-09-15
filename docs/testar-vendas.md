@@ -14,7 +14,7 @@
 - Cancelar preserva a venda, o total e os itens para consulta e devolve o estoque. Repetir o cancelamento retorna sucesso sem devolver novamente. Venda cancelada não pode ser alterada ou reativada.
 - Os itens não têm POST, PATCH ou DELETE próprios: as gravações são feitas pela venda para manter total e estoque consistentes.
 - Cada transação de venda usa uma conexão SQLite exclusiva. Isso também protege a disputa pelo último produto e cancelamentos simultâneos.
-- O esquema de `src/database/init.ts` foi mantido, sem migração ou alteração das tabelas.
+- As tabelas de vendas e itens vendidos foram mantidas. A inicialização também executa a migração de autenticação descrita no [guia de acesso inicial](acesso-inicial.md).
 
 ## Testes automatizados
 
@@ -25,7 +25,7 @@ npm run build -- --noEmit
 npm run test:vendas
 ```
 
-Os testes usam HTTP local e um banco SQLite temporário com as seis tabelas extraídas do `init.ts`. Não usam nem alteram `src/database/database.db`. Ao final, encerram as conexões e removem o banco de teste.
+Os testes usam HTTP local e um banco SQLite temporário com as seis tabelas extraídas do `init.ts` e a migração de acesso. Não usam nem alteram `src/database/database.db`. Ao final, encerram as conexões e removem o banco de teste.
 
 Cobertura: autenticação, criação, total e estoque, consulta, filtro de itens, isolamento entre empresas, dados inválidos, registros inativos, rollback, alteração, cancelamento repetido e simultâneo, venda concorrente, preço histórico e resposta genérica a falhas de banco.
 
@@ -33,8 +33,8 @@ Cobertura: autenticação, criação, total e estoque, consulta, filtro de itens
 
 Os testes manuais abaixo alteram os dados reais do ambiente em que a API estiver rodando. Use registros de teste.
 
-1. Configure `JWT_SECRET` no `.env` e inicie a API com `npm run dev`.
-2. Use uma empresa e um usuário já cadastrados e ativos. A senha deve corresponder ao hash salvo no banco.
+1. Siga o [guia do superAdmin e primeiro acesso](acesso-inicial.md) para criar sua conta global, cadastrar uma empresa e trocar as credenciais temporárias do admin.
+2. Use uma empresa e um usuário ativos com o primeiro acesso concluído. Para vendas, use o token empresarial, não o token do superAdmin nem o temporário.
 3. Faça login em `POST http://localhost:3000/usuarios/login`:
 
 ```json
@@ -140,7 +140,8 @@ Antes de cancelar a venda, faça estas tentativas:
 | Lista vazia, produto repetido, corpo vazio ou PATCH sem campos reconhecidos | 400 |
 | Venda/item inexistente ou pertencente a outra empresa | 404 |
 | Cliente/produto de outra empresa na criação | 404 |
-| Produto, cliente, usuário ou empresa inativos na criação/alteração | 409 |
+| Produto ou cliente inativo na criação/alteração | 409 |
+| Usuário ou empresa autenticada inativos | 401 |
 | Quantidade maior que o estoque disponível | 409 |
 | Alterar uma venda cancelada | 409 |
 | Banco ocupado além do tempo de espera | 409 |
