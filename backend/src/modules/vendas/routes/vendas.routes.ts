@@ -12,6 +12,8 @@ import { listarVendasController } from "../controllers/listarVendas.controller.j
 
 import { cancelarVendaController } from "../controllers/cancelarVenda.controller.js";
 
+import { pagarVendaController } from "../controllers/pagarVenda.controller.js";
+
 const rotasVendas = express.Router();
 
 rotasVendas.use(autenticar);
@@ -21,6 +23,8 @@ rotasVendas.get("/", listarVendasController);
 rotasVendas.get("/:id", buscarVendaController);
 
 rotasVendas.post("/", criarVendaController);
+
+rotasVendas.patch("/:id/pagar", pagarVendaController);
 
 rotasVendas.patch("/:id", alterarVendaController);
 
