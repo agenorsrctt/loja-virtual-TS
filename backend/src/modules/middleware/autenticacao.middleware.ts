@@ -48,7 +48,7 @@ function proteger(escopo: "empresa" | "superadmin", primeiroAcesso = false) {
 
                 }
 
-                res.locals.superadmin = { id: 1, versao_token: conta.versao_token };
+                res.locals.superadmin = { id: 1, email: conta.email, versao_token: conta.versao_token };
 
             } else {
 
@@ -80,7 +80,7 @@ function proteger(escopo: "empresa" | "superadmin", primeiroAcesso = false) {
 
                 }
 
-                res.locals.usuario = { id: conta.id, empresa_id: conta.empresa_id, email: conta.email, tipo: conta.tipo };
+                res.locals.usuario = { id: conta.id, nome: conta.nome, empresa_id: conta.empresa_id, empresa_nome: conta.empresa_nome, email: conta.email, tipo: conta.tipo };
 
                 if (primeiroAcesso) {
 
