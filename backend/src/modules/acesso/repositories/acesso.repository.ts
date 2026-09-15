@@ -16,6 +16,10 @@ export interface ContaAcesso {
 
 export interface ContaEmpresa extends ContaAcesso {
 
+    nome: string;
+
+    empresa_nome: string;
+
     empresa_id: number;
 
     tipo: "admin" | "gerente" | "colaborador";
@@ -42,7 +46,7 @@ export function criarSuperAdmin(email: string, senha: string) {
 
 export function buscarContaEmpresa(empresa_id: number, id: number) {
 
-    return buscarSQL<ContaEmpresa>(db, "SELECT u.*, e.status AS empresa_status FROM USUARIOS u JOIN EMPRESAS e ON e.id = u.empresa_id WHERE u.empresa_id = ? AND u.id = ?", [empresa_id, id]);
+    return buscarSQL<ContaEmpresa>(db, "SELECT u.*, e.empresa AS empresa_nome, e.status AS empresa_status FROM USUARIOS u JOIN EMPRESAS e ON e.id = u.empresa_id WHERE u.empresa_id = ? AND u.id = ?", [empresa_id, id]);
 
 }
 
@@ -61,5 +65,11 @@ export function concluirPrimeiroAcesso(conta: ContaEmpresa, email: string, senha
 export function atualizarSenhaSuperAdmin(versao: number, senha: string) {
 
     return executarSQL(db, "UPDATE SUPER_ADMIN SET senha = ?, versao_token = versao_token + 1 WHERE id = 1 AND versao_token = ?", [senha, versao]);
+
+}
+
+export function atualizarSenhaEmpresa(conta: ContaEmpresa, senha: string) {
+
+    return executarSQL(db, "UPDATE USUARIOS SET senha = ?, versao_token = versao_token + 1 WHERE id = ? AND empresa_id = ? AND versao_token = ? AND primeiro_acesso = 0 AND status = 'ativo'", [senha, conta.id, conta.empresa_id, conta.versao_token]);
 
 }
