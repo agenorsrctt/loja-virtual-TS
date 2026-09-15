@@ -1,0 +1,65 @@
+.etapas { display: flex; list-style: none; padding: 0; margin: 5px 0 28px; max-width: 600px; gap: 12px; }
+
+.etapas li { display: flex; align-items: center; gap: 9px; color: #a0a9b8; flex: 1; font-size: 12px; font-weight: 600; }
+
+.etapas span { border-radius: 50%; width: 31px; height: 31px; background: #e7ebf2; display: grid; place-items: center; }
+
+.etapas .atual { color: var(--azul); }
+
+.etapas .atual span { background: var(--azul); color: white; }
+
+.etapas .completa { color: var(--verde); }
+
+.etapas .completa span { background: #e5f7ee; }
+
+.venda-layout { grid-template-columns: minmax(0, 1.6fr) minmax(260px, 1fr); align-items: start; }
+
+.resumo-carrinho { position: sticky; top: 25px; }
+
+.cliente-resumo { display: flex; align-items: center; gap: 12px; background: #f7f9ff; padding: 15px; border-radius: 13px; }
+
+.cliente-resumo strong, .cliente-resumo small { display: block; }
+
+.cliente-resumo strong { font-size: 13px; }
+
+.itens-resumo { margin-top: 20px; }
+
+.legenda-total { display: block; margin-top: 10px; font-size: 10px; }
+
+.busca-etapa { display: block; margin-bottom: 15px; }
+
+.opcao-cliente { display: flex; gap: 14px; align-items: center; padding: 17px 13px; background: white; border: 1px solid transparent; border-bottom-color: var(--borda); width: 100%; border-radius: 10px; text-align: left; }
+
+.opcao-cliente strong, .opcao-cliente small { display: block; }
+
+.opcao-cliente .icon { margin-left: auto; width: 18px; color: #a0aac0; }
+
+.opcao-cliente.escolhida { background: #f0f4ff; border-color: #b9c9ff; }
+
+.opcao-cliente.escolhida .icon { color: var(--azul); }
+
+.rodape-etapa { display: flex; align-items: center; justify-content: space-between; gap: 14px; margin-top: 27px; border-top: 1px solid var(--borda); padding-top: 22px; }
+
+.produto-opcao { display: flex; gap: 13px; align-items: center; padding: 18px 0; border-bottom: 1px solid var(--borda); }
+
+.produto-descricao { flex: 1; }
+
+.produto-descricao strong, .produto-descricao small { display: block; }
+
+.produto-descricao strong { font-size: 13px; }
+
+.produto-descricao small { font-size: 11px; margin-top: 4px; }
+
+.quantidade { display: flex; gap: 3px; align-items: center; }
+
+.quantidade button { min-width: 33px; min-height: 36px; border: 0; border-radius: 8px; color: var(--azul); background: #edf2ff; font-size: 18px; }
+
+.quantidade input { width: 46px; min-height: 36px; padding: 7px 2px; text-align: center; appearance: textfield; -moz-appearance: textfield; }
+
+.quantidade input::-webkit-inner-spin-button { -webkit-appearance: none; }
+
+#erro-venda { margin-bottom: 20px; }
+
+@media (max-width: 1000px) { .venda-layout { grid-template-columns: 1fr; } .resumo-carrinho { position: static; } }
+
+@media (max-width: 760px) { .produto-opcao > .icone-caixa { display: none; } .rodape-etapa { flex-wrap: wrap; } .rodape-etapa .botao { flex: 1; font-size: 12px; } .cabecalho-pagina > .etiqueta { display: none; } .etapas { margin-top: 10px; } }
