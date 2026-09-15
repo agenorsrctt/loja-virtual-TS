@@ -1,4 +1,4 @@
-const CHAVE = 'vertice.sessao';
+const CHAVE = 'asr.sessao';
 
 export function sessao() {
 
