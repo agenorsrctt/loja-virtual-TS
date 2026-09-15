@@ -1,4 +1,4 @@
-import type sqlite3 from "sqlite3";
+import type { ConexaoBanco } from "../../../database/conexaoBanco.js";
 
 import type { ItemVendidoDTO } from "../dtos/itemVendido.dto.js";
 
@@ -6,7 +6,7 @@ import { buscarSQL, executarSQL, listarSQL } from "../../vendas/repositories/tra
 
 import { ErroVenda } from "../../vendas/utils/erroVenda.util.js";
 
-export async function devolverEstoqueRepository(conexao: sqlite3.Database, empresa_id: number, venda_id: number): Promise<void> {
+export async function devolverEstoqueRepository(conexao: ConexaoBanco, empresa_id: number, venda_id: number): Promise<void> {
 
     const itens = await listarSQL<ItemVendidoDTO>(conexao,
         "SELECT * FROM ITENS_VENDIDOS WHERE empresa_id = ? AND venda_id = ?", [empresa_id, venda_id]);
