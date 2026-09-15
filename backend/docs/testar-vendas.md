@@ -25,7 +25,7 @@ npm run build -- --noEmit
 npm run test:vendas
 ```
 
-Os testes usam HTTP local e um banco SQLite temporário com as seis tabelas extraídas do `init.ts` e a migração de acesso. Não usam nem alteram `src/database/database.db`. Ao final, encerram as conexões e removem o banco de teste.
+Os testes usam HTTP local e um banco SQLite temporário com as seis tabelas extraídas do `esquema.ts` e a migração de acesso. Não usam nem alteram `src/database/database.db`. Ao final, encerram as conexões e removem o banco de teste. `npm run test:turso` também executa os fluxos usando o adaptador do Turso com um banco libSQL temporário, sem acessar o banco remoto.
 
 Cobertura: autenticação, criação, total e estoque, consulta, filtro de itens, isolamento entre empresas, dados inválidos, registros inativos, rollback, alteração, cancelamento repetido e simultâneo, venda concorrente, preço histórico e resposta genérica a falhas de banco.
 
