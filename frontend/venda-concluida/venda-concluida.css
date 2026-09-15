@@ -1,0 +1,15 @@
+.comprovante { max-width: 530px; margin: 35px auto; text-align: center; padding: 45px; }
+
+.sucesso-circulo { background: #e3f7ec; color: #24a661; width: 95px; height: 95px; border-radius: 50%; display: grid; place-items: center; margin: 0 auto 25px; }
+
+.sucesso-circulo .icon { width: 44px; height: 44px; stroke-width: 2.5; }
+
+.sobretitulo { font-size: 9px; font-weight: 700; color: var(--verde); letter-spacing: 1.8px; }
+
+.comprovante h1 { margin: 12px 0; }
+
+.resumo-sucesso { display: grid; gap: 7px; background: #f7f9fd; border-radius: 16px; padding: 25px; margin: 27px 0; }
+
+.resumo-sucesso b { font-size: 34px; color: var(--verde); }
+
+@media (max-width: 760px) { .comprovante { padding: 27px 22px; margin: 15px auto; } }
