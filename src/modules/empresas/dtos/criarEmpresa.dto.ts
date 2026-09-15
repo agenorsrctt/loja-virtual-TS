@@ -1,4 +1,4 @@
-export interface criarEmpresaDTO {
+export interface CriarEmpresaDTO {
     empresa: string;
     cnpj: string;
 }

@@ -1,13 +1,12 @@
 import type { Request, Response } from "express";
-import { buscarEmpresaService } from "../services/buscarEmpresa.service.js";
+import { inativarEmpresaService } from "../services/inativarEmpresa.service.js";
 
-export async function buscarEmpresaController(req: Request, res: Response) {
+export async function inativarEmpresaController(req: Request, res: Response) {
     try {
-        const dados = await buscarEmpresaService(Number(req.params.id));
+        await inativarEmpresaService(Number(req.params.id));
 
         return res.status(200).json({
-            mensagem: "Empresa encontrada com sucesso.",
-            dados
+            mensagem: "Empresa inativada com sucesso!"
         });
     } catch (erro) {
         if (erro instanceof Error) {
@@ -22,7 +21,7 @@ export async function buscarEmpresaController(req: Request, res: Response) {
             }
         }
 
-        console.error("Erro ao buscar empresa:", erro);
+        console.error("Erro ao inativar empresa:", erro);
         return res.status(500).json({ mensagem: "Erro interno do servidor." });
     }
 }

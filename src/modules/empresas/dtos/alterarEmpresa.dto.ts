@@ -1,7 +1,7 @@
-export type Status = "ativo" | "inativo";
+import type { StatusEmpresa } from "./empresa.dto.js";
 
-export interface alterarEmpresaDTO {
+export interface AlterarEmpresaDTO {
     empresa?: string;
     cnpj?: string;
-    status?: Status;
-};
+    status?: StatusEmpresa;
+}

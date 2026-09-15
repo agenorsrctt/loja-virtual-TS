@@ -1,7 +1,8 @@
-export type Status = "ativo" | "inativo";
+export type StatusEmpresa = "ativo" | "inativo";
 
-export interface Empresa {
-    id: number;
+export interface EmpresaDTO {
+    readonly id: number;
     empresa: string;
     cnpj: string;
+    status: StatusEmpresa;
 }

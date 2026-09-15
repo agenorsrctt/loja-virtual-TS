@@ -1,18 +1,17 @@
 import db from "../../../database/connection.js";
-import type { Empresa } from "../dtos/empresa.dto.js";
+import type { EmpresaDTO } from "../dtos/empresa.dto.js";
 
+export function listarEmpresasRepository(): Promise<EmpresaDTO[]> {
+    const sql = "SELECT * FROM EMPRESAS";
+    const valores: number[] = [];
 
-export function listarEmpresasRepository(): Promise<Empresa[]> {
-
-    const sql: string = "SELECT * FROM EMPRESAS";
-
-    return new Promise<Empresa[]>((resolve, reject) => {
-        db.all<Empresa>(sql, (erro, empresas) => {
-            if(erro) {
-                return reject(new Error("Repository - ERROR: " + erro));
-            };
+    return new Promise<EmpresaDTO[]>((resolve, reject) => {
+        db.all<EmpresaDTO>(sql, valores, (erro, empresas) => {
+            if (erro) {
+                return reject(erro);
+            }
 
             resolve(empresas);
         });
     });
-};
+}

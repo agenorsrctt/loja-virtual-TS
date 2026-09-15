@@ -1,43 +1,32 @@
-import type { Response, Request } from "express";
+import type { Request, Response } from "express";
 import { alterarEmpresaService } from "../services/alterarEmpresa.service.js";
-import type { alterarEmpresaDTO } from "../dtos/alterarEmpresa.dto.js";
-import { buscarEmpresasPorIDRepository } from "../repositories/buscarEmpresa.repository.js";
 
 export async function alterarEmpresaController(req: Request, res: Response) {
-
     try {
+        await alterarEmpresaService(req.body, Number(req.params.id));
 
-        /* begin */
-        
-        const id: number = Number(req.params.id);
-        const alterarEmpresa: alterarEmpresaDTO = req.body;
-
-        await alterarEmpresaService(alterarEmpresa, id);
-
-        /* commit */
-
-        const empresaAlterada = await buscarEmpresasPorIDRepository(id);
-
-        res.status(200).json({
-            mensagem: "Empresa alterada com sucesso!",
-            dados: empresaAlterada
+        return res.status(200).json({
+            mensagem: "Empresa alterada com sucesso!"
         });
+    } catch (erro) {
+        if (erro instanceof Error) {
+            if (erro.message === "Empresa não encontrada.") {
+                return res.status(404).json({ mensagem: erro.message });
+            }
 
-    } catch (error) {
+            if (
+                erro.message === "Empresa inválida, tente novamente." ||
+                erro.message === "Dados da empresa inválidos." ||
+                erro.message === "Nome inválido, tente novamente." ||
+                erro.message === "CNPJ inválido, tente novamente." ||
+                erro.message === "Status inválido, tente novamente." ||
+                erro.message === "Informe ao menos um campo para alterar."
+            ) {
+                return res.status(400).json({ mensagem: erro.message });
+            }
+        }
 
-        /* rollback */
-
-        if (error instanceof Error) {
-            return res.status(500).json({
-                mensagem: "Erro do servidor",
-                error: error.message
-            });
-        };
-
-        return res.status(500).json({
-            mensagem: "Erro do servidor",
-        });
-
-    };
-
-};
+        console.error("Erro ao alterar empresa:", erro);
+        return res.status(500).json({ mensagem: "Erro interno do servidor." });
+    }
+}

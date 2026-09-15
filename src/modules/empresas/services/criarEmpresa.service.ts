@@ -1,47 +1,39 @@
-import { criarEmpresaRepository } from "../repositories/criarEmpresa.repository.js"
-import type { criarEmpresaDTO } from "../dtos/criarEmpresa.dto.js";
+import { criarEmpresaRepository } from "../repositories/criarEmpresa.repository.js";
+import type { CriarEmpresaDTO } from "../dtos/criarEmpresa.dto.js";
+import type { EmpresaDTO } from "../dtos/empresa.dto.js";
 import type { CriarUsuarioDto } from "../../usuarios/dtos/interfacesUsuario.js";
-import { criarUsuarioRepository } from "../../usuarios/repositories/criarUsuario.repository.js";
+import { criarUsuariosService } from "../../usuarios/services/criarUsuarios.service.js";
 import { begin, commit, rollback } from "../../../database/transaction.js";
 
-export async function criarEmpresaService(dados: criarEmpresaDTO): Promise<void> {
-
-    if (!dados.empresa) {
-        throw new Error("Nome inválido, tente novamente.")
+export async function criarEmpresaService(dados: CriarEmpresaDTO): Promise<EmpresaDTO> {
+    if (!dados || typeof dados !== "object" || Array.isArray(dados)) {
+        throw new Error("Dados da empresa inválidos.");
     }
 
-    if (!dados.cnpj) {
-        throw new Error("CNPJ inválido, tente novamente.")
+    if (typeof dados.empresa !== "string" || !dados.empresa.trim()) {
+        throw new Error("Nome inválido, tente novamente.");
+    }
+
+    if (typeof dados.cnpj !== "string" || !dados.cnpj.trim()) {
+        throw new Error("CNPJ inválido, tente novamente.");
     }
 
     await begin();
     try {
-        const empresaCriada = await criarEmpresaRepository(dados);
-
-        const empresaAdmin: CriarUsuarioDto = {
-            empresa_id: empresaCriada,
+        const empresa = await criarEmpresaRepository(dados);
+        const administrador: CriarUsuarioDto = {
+            empresa_id: empresa.id,
             nome: "Admin",
             tipo: "admin",
             email: "mudar@email.com",
-            status: "ativo",
-            senha: "123456",
-            primeiroAcesso: true
-        }
+            senha: "123456"
+        };
 
-        await criarUsuarioRepository(empresaAdmin);
-
+        await criarUsuariosService(administrador, "admin", empresa.id);
         await commit();
-
-    } catch (error) {
-
+        return empresa;
+    } catch (erro) {
         await rollback();
-
-        if (error instanceof Error) {
-            throw new Error("CriarService Error: - " + error.message);
-        }
-
-        throw new Error("CriarService Error: - Erro desconhecido.");
-
+        throw erro;
     }
-
-};
+}

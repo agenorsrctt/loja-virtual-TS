@@ -1,28 +1,20 @@
 import db from "../../../database/connection.js";
-import type { Status } from "../dtos/empresa.dto.js";
 
 export function inativarEmpresaRepository(id: number): Promise<void> {
-
-    const sql = "UPDATE EMPRESAS SET status = ? WHERE id = ?";
-
-    const status: Status = "inativo";
+    const sql = "UPDATE EMPRESAS SET status = 'inativo' WHERE id = ?";
+    const valores: number[] = [id];
 
     return new Promise<void>((resolve, reject) => {
-
-        db.run(sql, [status, id], async function (erro) {
-
+        db.run(sql, valores, function (erro) {
             if (erro) {
-                return reject(new Error("Repository - ERROR: " + erro));
-            };
+                return reject(erro);
+            }
 
             if (this.changes === 0) {
-                return reject(new Error("Repository - Changes: " + erro));
-            };
+                return reject(new Error("Empresa não encontrada."));
+            }
 
             resolve();
-
         });
-
     });
-
-};
+}
