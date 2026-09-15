@@ -10,13 +10,19 @@
     "test:vendas": "node --experimental-vm-modules --disable-warning=ExperimentalWarning --test tests/vendas.test.mjs",
     "criar-superadmin": "tsx scripts/criarSuperAdmin.ts",
     "test:acesso": "node --experimental-vm-modules --disable-warning=ExperimentalWarning --test tests/acesso.test.mjs",
-    "test:frontend": "node --test tests/frontend.test.mjs"
+    "test:frontend": "node --test tests/frontend.test.mjs",
+    "build:vercel": "tsc --noEmit && node scripts/prepararFrontend.mjs",
+    "preparar:turso": "tsx scripts/prepararTurso.ts",
+    "criar-superadmin:turso": "tsx scripts/criarSuperAdminTurso.ts",
+    "test:turso": "node scripts/testarTurso.mjs",
+    "test:publicacao": "node --test tests/publicacao.test.mjs"
   },
   "keywords": [],
   "author": "",
   "license": "ISC",
   "type": "module",
   "dependencies": {
+    "@libsql/client": "0.18.0",
     "bcrypt": "^6.0.0",
     "dotenv": "^17.4.2",
     "express": "^5.2.1",
@@ -30,5 +36,8 @@
     "@types/node": "^26.4.1",
     "tsx": "^4.23.13",
     "typescript": "^7.0.2"
+  },
+  "engines": {
+    "node": "24.x"
   }
 }
