@@ -1,0 +1,11 @@
+.perfil-layout { grid-template-columns: minmax(260px, 1fr) minmax(300px, 1.5fr); align-items: start; }
+
+.avatar-grande { width: 75px; height: 75px; font-size: 30px; margin-bottom: 20px; }
+
+#minha-conta { text-align: center; }
+
+#minha-conta > p { margin-top: 7px; overflow-wrap: anywhere; }
+
+#minha-conta .linha { font-size: 12px; text-align: left; }
+
+@media (max-width: 900px) { .perfil-layout { grid-template-columns: 1fr; } }
