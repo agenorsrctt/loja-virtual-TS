@@ -6,7 +6,7 @@ export function listarUsuarioRepository(empresa_id: number): Promise<UsuarioDto[
     const sql = "SELECT id, nome, email, tipo, status, empresa_id FROM USUARIOS WHERE empresa_id = ?";
 
     return new Promise<UsuarioDto[]>((resolve, reject) => {
-        db.all<UsuarioDto>(sql, empresa_id, (erro, usuarios) => {
+        db.all<UsuarioDto>(sql, [empresa_id], (erro, usuarios) => {
             if(erro){
                 return reject(new Error("Listar Repository Error: "+ erro));
             }
