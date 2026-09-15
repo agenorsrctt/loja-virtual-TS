@@ -6,14 +6,12 @@ export interface ProdutosDTO {
     produto: string;
     estoque: number;
     preco: number;
-    categoria: string;
-    codigo: string;
+    categoria: string | null;
+    codigo: string | null;
     status: StatusProdutos
 }
 
 export interface CriarProdutoDTO {
-    readonly id: number;
-    readonly empresa_id: number;
     produto: string;
     estoque: number;
     preco: number;
@@ -24,8 +22,6 @@ export interface CriarProdutoDTO {
 
 
 export interface AlterarProdutoDTO {
-    readonly id: number;
-    readonly empresa_id: number;
     produto?: string;
     estoque?: number;
     preco?: number;
