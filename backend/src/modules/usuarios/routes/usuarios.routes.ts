@@ -1,5 +1,7 @@
 import { primeiroAcessoController } from "../../acesso/controllers/acesso.controller.js";
 
+import { perfilEmpresaController, alterarSenhaEmpresaController } from "../../acesso/controllers/perfil.controller.js";
+
 import express from "express";
 
 import { criarUsuarioController } from "../controllers/criarUsuarios.controller.js";
@@ -17,6 +19,10 @@ import { autenticar, autenticarPrimeiroAcesso } from "../../middleware/autentica
 import { inativarUsuarioController } from "../controllers/inativarUsuario.controller.js";
 
 const routerUsuario = express.Router();
+
+routerUsuario.get("/perfil", autenticar, perfilEmpresaController);
+
+routerUsuario.patch("/senha", autenticar, alterarSenhaEmpresaController);
 
 routerUsuario.post("/login", loginUsuarioController )
 routerUsuario.patch("/primeiro-acesso", autenticarPrimeiroAcesso, primeiroAcessoController);
