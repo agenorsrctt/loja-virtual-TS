@@ -51,8 +51,8 @@ test('aplicativo completo inicia no modo Vercel sem carregar SQLite', () => {
         const cliente = clienteTurso();
         // Simula somente a consulta de versão, sem acessar um banco remoto.
         cliente.execute = async ({ sql }) => {
-            assert.equal(sql, "SELECT nome FROM MIGRACOES WHERE nome = 'asr_schema_v2_visitas'");
-            return { rows: [{ nome: 'asr_schema_v2_visitas' }] };
+            assert.equal(sql, "SELECT nome FROM MIGRACOES WHERE nome = 'asr_schema_v3_vendas'");
+            return { rows: [{ nome: 'asr_schema_v3_vendas' }] };
         };
         try {
             const { default: app } = await import('./src/app.ts');

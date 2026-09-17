@@ -4,6 +4,7 @@ import { executarSQL, buscarSQL } from "../modules/vendas/repositories/transacao
 
 import { migrarAcesso } from "./migrarAcesso.js";
 
+import { migrarCondicoesVenda } from "./migrarCondicoesVenda.js";
 import { migrarStatusVendas } from "./migrarStatusVendas.js";
 
 export async function prepararBanco(): Promise<void> {
@@ -62,6 +63,7 @@ export async function prepararBanco(): Promise<void> {
         usuario_id INTEGER NOT NULL,
         cliente_id INTEGER NOT NULL,
         data DATETIME DEFAULT CURRENT_TIMESTAMP,
+        comentarios TEXT NOT NULL DEFAULT '',
         valor_total REAL NOT NULL,
         status TEXT NOT NULL,
         FOREIGN KEY (empresa_id) references EMPRESAS(id),
@@ -72,7 +74,8 @@ export async function prepararBanco(): Promise<void> {
     await executarSQL(db, `CREATE TABLE IF NOT EXISTS ITENS_VENDIDOS(
         id INTEGER PRIMARY KEY AUTOINCREMENT,
         venda_id INTEGER NOT NULL,
-        produto_id INTEGER NOT NULL,
+        produto_id INTEGER,
+        descricao TEXT,
         empresa_id INTEGER NOT NULL,
         valor_vendido REAL NOT NULL,
         quantidade INTEGER NOT NULL,
@@ -81,9 +84,18 @@ export async function prepararBanco(): Promise<void> {
         FOREIGN KEY (empresa_id) references EMPRESAS(id)
         )`);
 
+    await executarSQL(db, `CREATE TABLE IF NOT EXISTS PAGAMENTOS(
+        id INTEGER PRIMARY KEY AUTOINCREMENT, venda_id INTEGER NOT NULL,
+        empresa_id INTEGER NOT NULL, valor REAL NOT NULL, data TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
+        FOREIGN KEY(venda_id) REFERENCES VENDAS(id))`);
+    await executarSQL(db, `CREATE TABLE IF NOT EXISTS PARCELAS(
+        id INTEGER PRIMARY KEY AUTOINCREMENT, venda_id INTEGER NOT NULL,
+        empresa_id INTEGER NOT NULL, numero INTEGER NOT NULL, valor REAL NOT NULL, vencimento TEXT NOT NULL,
+        FOREIGN KEY(venda_id) REFERENCES VENDAS(id))`);
     await migrarAcesso();
 
     await migrarStatusVendas();
+    await migrarCondicoesVenda();
 
     await executarSQL(db, "INSERT OR IGNORE INTO MIGRACOES(nome) VALUES('asr_schema_v1')");
     await executarSQL(db, "INSERT OR IGNORE INTO MIGRACOES(nome) VALUES('asr_schema_v2_visitas')");
@@ -92,7 +104,7 @@ export async function prepararBanco(): Promise<void> {
 
 export async function verificarBanco(): Promise<void> {
 
-    const versao = await buscarSQL(db, "SELECT nome FROM MIGRACOES WHERE nome = 'asr_schema_v2_visitas'");
+    const versao = await buscarSQL(db, "SELECT nome FROM MIGRACOES WHERE nome = 'asr_schema_v3_vendas'");
 
     if (!versao) {
 

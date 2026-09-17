@@ -12,6 +12,7 @@ export async function devolverEstoqueRepository(conexao: ConexaoBanco, empresa_i
         "SELECT * FROM ITENS_VENDIDOS WHERE empresa_id = ? AND venda_id = ?", [empresa_id, venda_id]);
 
     for (const item of itens) {
+        if (item.produto_id == null) continue;
 
         const produto = await buscarSQL<{ estoque: number }>(conexao,
             "SELECT estoque FROM PRODUTOS WHERE empresa_id = ? AND id = ?", [empresa_id, item.produto_id]);

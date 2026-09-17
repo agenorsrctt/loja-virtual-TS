@@ -1,6 +1,6 @@
 import { api, registros, sessao, sair } from './api.js';
 
-import { iniciar, esc, icone, etiqueta, dinheiro, estado, erroTela, enviarFormulario, confirmar, notificar } from './interface.js';
+import { iniciar, esc, icone, etiqueta, dinheiro, estado, erroTela, enviarFormulario, confirmarComSenha, notificar } from './interface.js';
 
 const configuracoes = {
     clientes: { titulo: 'Clientes', singular: 'cliente', nome: 'nome', icone: 'clientes', campos: [['nome', 'Nome completo', 'text', true], ['email', 'E-mail', 'email', false], ['telefone', 'Telefone', 'tel', true]], colunas: ['Cliente', 'Contato', 'Status'], celulas: r => [`<strong>${esc(r.nome)}</strong><small>#${r.id}</small>`, `${esc(r.telefone)}<small>${esc(r.email || 'Sem e-mail')}</small>`, etiqueta(r.status)] },
@@ -77,7 +77,7 @@ export async function montarCadastro(tipo) {
 
         }
 
-        lista.innerHTML = `<div class="tabela-wrap"><table class="tabela-responsiva"><thead><tr>${config.colunas.map(c => `<th scope="col">${c}</th>`).join('')}<th scope="col" class="sr-only">Ações</th></tr></thead><tbody>${filtrados.slice((pagina - 1) * 10, pagina * 10).map(r => `<tr>${config.celulas(r).map((celula, indice) => `<td data-label="${config.colunas[indice]}">${celula}</td>`).join('')}<td><div class="acoes-tabela"><button data-editar="${r.id}" aria-label="Editar ${esc(r[config.nome])}">Editar</button>${r.status === 'ativo' ? `<button data-inativar="${r.id}" aria-label="Inativar ${esc(r[config.nome])}">Inativar</button>` : ''}</div></td></tr>`).join('')}</tbody></table></div><div class="paginacao"><small>${filtrados.length} registro(s) · Página ${pagina} de ${paginas}</small><div><button class="botao secundario" id="anterior" ${pagina === 1 ? 'disabled' : ''}>Anterior</button><button class="botao secundario" id="proxima" ${pagina === paginas ? 'disabled' : ''}>Próxima</button></div></div>`;
+        lista.innerHTML = `<div class="tabela-wrap"><table class="tabela-responsiva"><thead><tr>${config.colunas.map(c => `<th scope="col">${c}</th>`).join('')}<th scope="col" class="sr-only">Ações</th></tr></thead><tbody>${filtrados.slice((pagina - 1) * 10, pagina * 10).map(r => `<tr>${config.celulas(r).map((celula, indice) => `<td data-label="${config.colunas[indice]}">${celula}</td>`).join('')}<td><div class="acoes-tabela"><button data-editar="${r.id}" aria-label="Editar ${esc(r[config.nome])}">Editar</button></div></td></tr>`).join('')}</tbody></table></div><div class="paginacao"><small>${filtrados.length} registro(s) · Página ${pagina} de ${paginas}</small><div><button class="botao secundario" id="anterior" ${pagina === 1 ? 'disabled' : ''}>Anterior</button><button class="botao secundario" id="proxima" ${pagina === paginas ? 'disabled' : ''}>Próxima</button></div></div>`;
 
         lista.querySelector('#anterior').onclick = () => { pagina--; desenhar(); };
 
@@ -85,37 +85,6 @@ export async function montarCadastro(tipo) {
 
         lista.querySelectorAll('[data-editar]').forEach(btn => { btn.onclick = () => editar(todos.find(r => r.id === Number(btn.dataset.editar))); });
 
-        lista.querySelectorAll('[data-inativar]').forEach(btn => {
-
-            btn.onclick = async () => {
-
-                const id = Number(btn.dataset.inativar);
-
-                if (!await confirmar(`Inativar ${config.singular}?`, 'O registro será preservado, mas ficará inativo.', 'Sim, inativar')) return;
-
-                btn.disabled = true;
-
-                try {
-
-                    await api(`/${tipo}/${id}`, { method: 'DELETE' });
-
-                    if (tipo === 'usuarios' && id === atual.perfil.id) return sair('Sua conta foi inativada.');
-
-                    await carregar();
-
-                    notificar(`${config.singular} inativado com sucesso.`);
-
-                } catch (erro) {
-
-                    notificar(erro.message);
-
-                    btn.disabled = false;
-
-                }
-
-            };
-
-        });
 
     }
 
@@ -133,7 +102,7 @@ export async function montarCadastro(tipo) {
 
         }).join('');
 
-        dialogo.innerHTML = `<div class="dialogo-topo"><h2>${registro ? 'Editar' : 'Novo'} ${config.singular}</h2><button class="botao secundario icone" type="button" data-fechar aria-label="Fechar">${icone('fechar')}</button></div><form class="formulario">${campos}${tipo === 'usuarios' ? `<div class="campo"><label for="cad-tipo">Perfil</label><select id="cad-tipo" name="tipo"><option value="colaborador">Colaborador</option><option value="gerente">Gerente</option><option value="admin">Administrador</option></select></div>` : ''}${tipo !== 'empresas' || registro ? '<div class="campo"><label for="cad-status">Status</label><select id="cad-status" name="status"><option value="ativo">Ativo</option><option value="inativo">Inativo</option></select></div>' : '<p class="aviso info">O primeiro administrador será criado automaticamente. Guarde as credenciais exibidas após o cadastro.</p>'}<div data-erro class="aviso erro" role="alert" hidden></div><div class="rodape-formulario"><button type="button" data-fechar class="botao secundario">Voltar</button><button class="botao" type="submit">${registro ? 'Salvar alterações' : 'Cadastrar'}</button></div></form>`;
+        dialogo.innerHTML = `<div class="dialogo-topo"><h2>${registro ? 'Editar' : 'Novo'} ${config.singular}</h2><button class="botao secundario icone" type="button" data-fechar aria-label="Fechar">${icone('fechar')}</button></div><form class="formulario">${campos}${tipo === 'usuarios' ? `<div class="campo"><label for="cad-tipo">Perfil</label><select id="cad-tipo" name="tipo"><option value="colaborador">Colaborador</option><option value="gerente">Gerente</option><option value="admin">Administrador</option></select></div>` : ''}${tipo !== 'empresas' || registro ? '<div class="campo"><label for="cad-status">Status</label><select id="cad-status" name="status"><option value="ativo">Ativo</option><option value="inativo">Inativo</option></select></div>' : '<p class="aviso info">O primeiro administrador será criado automaticamente. Guarde as credenciais exibidas após o cadastro.</p>'}<div data-erro class="aviso erro" role="alert" hidden></div><div class="rodape-formulario">${registro ? '<button type="button" data-excluir class="botao perigo">Excluir</button>' : ''}<button type="button" data-fechar class="botao secundario">Voltar</button><button class="botao" type="submit">${registro ? 'Salvar alterações' : 'Cadastrar'}</button></div></form>`;
 
         document.body.append(dialogo);
 
@@ -151,6 +120,18 @@ export async function montarCadastro(tipo) {
 
         }
 
+        dialogo.querySelector('[data-excluir]')?.addEventListener('click', async () => {
+            const descricao = tipo === 'empresas'
+                ? 'Esta ação é permanente e excluirá a empresa, todos os seus usuários, clientes, produtos, vendas, parcelas e pagamentos. Deseja continuar?'
+                : 'Esta ação é permanente. Cadastros vinculados a vendas não podem ser excluídos. Deseja continuar?';
+            const excluido = await confirmarComSenha(`Excluir ${config.singular} "${registro[config.nome]}"?`, descricao,
+                senha_atual => api(`/${tipo}/${registro.id}/excluir`, { method: 'DELETE', body: { senha_atual } }));
+            if (!excluido) return;
+            dialogo.close();
+            if (tipo === 'usuarios' && registro.id === atual.perfil.id) return sair('Sua conta foi excluída.');
+            await carregar().catch(erroTela);
+            notificar('Registro excluído permanentemente.');
+        });
         dialogo.querySelector('form').onsubmit = (evento) => {
 
             evento.preventDefault();

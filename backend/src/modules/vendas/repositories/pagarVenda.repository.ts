@@ -6,7 +6,7 @@ import { buscarVendaNaConexao } from "./buscarVenda.repository.js";
 
 import { ErroVenda } from "../utils/erroVenda.util.js";
 
-export function pagarVendaRepository(empresa_id: number, id: number): Promise<VendaDetalhadaDTO> {
+export function pagarVendaRepository(empresa_id: number, id: number, valor?: number): Promise<VendaDetalhadaDTO> {
 
     return executarTransacaoVenda(async (conexao) => {
 
@@ -19,14 +19,17 @@ export function pagarVendaRepository(empresa_id: number, id: number): Promise<Ve
         }
 
         if (venda.status === "pago") {
+            if (valor !== undefined) throw new ErroVenda("A venda já está quitada.", 409);
 
             return venda;
 
         }
 
-        await executarSQL(conexao, "UPDATE VENDAS SET status = 'pago' WHERE empresa_id = ? AND id = ?", [empresa_id, id]);
-
-        return { ...venda, status: "pago" };
+        const centavos = Math.round((valor ?? venda.saldo) * 100);
+        if (centavos > Math.round(venda.saldo * 100)) throw new ErroVenda("O pagamento supera o saldo da venda.", 400);
+        await executarSQL(conexao, "INSERT INTO PAGAMENTOS(venda_id, empresa_id, valor) VALUES(?, ?, ?)", [id, empresa_id, centavos / 100]);
+        if (centavos === Math.round(venda.saldo * 100)) await executarSQL(conexao, "UPDATE VENDAS SET status = 'pago' WHERE empresa_id = ? AND id = ?", [empresa_id, id]);
+        return await buscarVendaNaConexao(conexao, empresa_id, id);
 
     });
 

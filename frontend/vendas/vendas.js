@@ -1,6 +1,6 @@
 import { api, registros } from '../compartilhado/api.js';
 
-import { iniciar, esc, dinheiro, dataHora, dataVenda, etiqueta, estado, erroTela, confirmar, notificar } from '../compartilhado/interface.js';
+import { iniciar, esc, dinheiro, dataHora, dataVenda, etiqueta, estado, erroTela } from '../compartilhado/interface.js';
 
 async function carregar() {
 
@@ -46,37 +46,7 @@ async function carregar() {
 
         }
 
-        alvo.innerHTML = `<div class="tabela-wrap"><table class="tabela-responsiva"><thead><tr><th>Venda / cliente</th><th>Data</th><th>Total</th><th>Status</th><th>Ações</th></tr></thead><tbody>${lista.slice((pagina - 1) * 10, pagina * 10).map(v => `<tr><td><strong>#${v.id}</strong><small>${esc(clientes.get(v.cliente_id) || 'Cliente #' + v.cliente_id)}</small></td><td data-label="Data">${dataHora(v.data)}</td><td data-label="Total"><strong>${dinheiro(v.valor_total)}</strong></td><td data-label="Status">${etiqueta(v.status)}</td><td><a class="botao fantasma" href="../detalhes-venda/detalhes-venda.html?id=${v.id}">Ver detalhes →</a>${v.status === 'pendente' ? `<button class="botao" data-acao="pagar" data-id="${v.id}">Marcar como pago</button>` : ''}${v.status !== 'cancelado' ? `<button class="botao perigo" data-acao="cancelar" data-id="${v.id}">Cancelar</button>` : ''}</td></tr>`).join('')}</tbody></table></div><div class="paginacao"><small>${lista.length} venda(s) · Página ${pagina} de ${paginas}</small><div><button class="botao secundario" id="anterior" ${pagina === 1 ? 'disabled' : ''}>Anterior</button><button class="botao secundario" id="proximo" ${pagina === paginas ? 'disabled' : ''}>Próxima</button></div></div>`;
-
-        alvo.querySelectorAll('[data-acao]').forEach(botao => botao.addEventListener('click', async () => {
-
-            const pagar = botao.dataset.acao === 'pagar';
-
-            if (!await confirmar(pagar ? 'Confirmar pagamento?' : 'Cancelar venda?', pagar ? 'Confirme que o pagamento foi recebido.' : 'Os itens serão devolvidos ao estoque.', pagar ? 'Marcar como pago' : 'Cancelar venda')) return;
-
-            botao.disabled = true;
-
-            try {
-
-                const resposta = await api('/vendas/' + botao.dataset.id + (pagar ? '/pagar' : ''), { method: pagar ? 'PATCH' : 'DELETE' });
-
-                const indice = vendas.findIndex(v => v.id === resposta.dados.id);
-
-                vendas[indice] = resposta.dados;
-
-                desenhar();
-
-                notificar(pagar ? 'Pagamento registrado.' : 'Venda cancelada. Estoque devolvido.');
-
-            } catch (erro) {
-
-                botao.disabled = false;
-
-                erroTela(erro);
-
-            }
-
-        }));
+        alvo.innerHTML = `<div class="tabela-wrap"><table class="tabela-responsiva"><thead><tr><th>Venda / cliente</th><th>Data</th><th>Total</th><th>Status</th><th>Ações</th></tr></thead><tbody>${lista.slice((pagina - 1) * 10, pagina * 10).map(v => `<tr><td><strong>#${v.id}</strong><small>${esc(clientes.get(v.cliente_id) || 'Cliente #' + v.cliente_id)}</small></td><td data-label="Data">${dataHora(v.data)}</td><td data-label="Total"><strong>${dinheiro(v.valor_total)}</strong><small>Recebido: ${dinheiro(v.valor_pago || 0)} · Saldo: ${dinheiro(v.saldo ?? v.valor_total)}</small></td><td data-label="Status">${etiqueta(v.status)}</td><td><a class="botao fantasma" href="../detalhes-venda/detalhes-venda.html?id=${v.id}">Ver detalhes →</a>${v.status === 'pendente' ? `<a class="botao" href="../detalhes-venda/detalhes-venda.html?id=${v.id}">Receber pagamento</a>` : ''}</td></tr>`).join('')}</tbody></table></div><div class="paginacao"><small>${lista.length} venda(s) · Página ${pagina} de ${paginas}</small><div><button class="botao secundario" id="anterior" ${pagina === 1 ? 'disabled' : ''}>Anterior</button><button class="botao secundario" id="proximo" ${pagina === paginas ? 'disabled' : ''}>Próxima</button></div></div>`;
 
         alvo.querySelector('#anterior').onclick = () => { pagina--; desenhar(); };
 

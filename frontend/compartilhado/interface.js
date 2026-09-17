@@ -193,3 +193,41 @@ export function confirmar(titulo, descricao, acao = 'Confirmar') {
     });
 
 }
+
+// A senha existe apenas neste formulário e é enviada na requisição confirmada.
+export function confirmarComSenha(titulo, descricao, executar, acao = 'Excluir definitivamente') {
+    return new Promise(resolve => {
+        const dialogo = document.createElement('dialog');
+        dialogo.setAttribute('aria-label', titulo);
+        dialogo.innerHTML = `<h2>${esc(titulo)}</h2><p class="muted" style="margin:16px 0">${esc(descricao)}</p><form class="formulario"><div class="campo"><label for="confirmar-senha">Sua senha atual</label><input id="confirmar-senha" type="password" autocomplete="current-password" required></div><div data-erro class="aviso erro" role="alert" hidden></div><div class="rodape-formulario"><button type="button" data-voltar class="botao secundario" autofocus>Voltar</button><button type="submit" class="botao perigo">${esc(acao)}</button></div></form>`;
+        let enviando = false;
+        let concluido = false;
+        const campo = dialogo.querySelector('input');
+        dialogo.querySelector('[data-voltar]').onclick = () => dialogo.close();
+        dialogo.addEventListener('cancel', evento => { if (enviando) evento.preventDefault(); });
+        dialogo.addEventListener('close', () => { campo.value = ''; dialogo.remove(); resolve(concluido); });
+        dialogo.querySelector('form').onsubmit = async evento => {
+            evento.preventDefault();
+            if (enviando) return;
+            enviando = true;
+            dialogo.querySelectorAll('button').forEach(b => { b.disabled = true; });
+            const erro = dialogo.querySelector('[data-erro]');
+            erro.hidden = true;
+            try {
+                await executar(campo.value);
+                concluido = true;
+                dialogo.close();
+            } catch (falha) {
+                erro.textContent = falha.message;
+                erro.hidden = false;
+                campo.value = '';
+                campo.focus();
+            } finally {
+                enviando = false;
+                dialogo.querySelectorAll('button').forEach(b => { b.disabled = false; });
+            }
+        };
+        document.body.append(dialogo);
+        dialogo.showModal();
+    });
+}

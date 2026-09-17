@@ -63,3 +63,5 @@
 @media (max-width: 1000px) { .venda-layout { grid-template-columns: 1fr; } .resumo-carrinho { position: static; } }
 
 @media (max-width: 760px) { .produto-opcao > .icone-caixa { display: none; } .rodape-etapa { flex-wrap: wrap; } .rodape-etapa .botao { flex: 1; font-size: 12px; } .cabecalho-pagina > .etiqueta { display: none; } .etapas { margin-top: 10px; } }
+
+.form-avulso,.condicoes-venda{margin:20px 0;padding:20px;border:1px solid #dbe3ef;border-radius:12px}.campos-venda{display:grid;grid-template-columns:2fr 1fr 1fr;gap:14px;margin:16px 0}.condicoes-venda label,.form-avulso label{display:flex;flex-direction:column;gap:8px}.condicoes-venda input,.condicoes-venda textarea,.form-avulso input{width:100%;padding:12px;border:1px solid #b8c3d4;border-radius:8px;font:inherit}.condicoes-venda textarea{resize:vertical}@media(max-width:650px){.campos-venda{grid-template-columns:1fr}}

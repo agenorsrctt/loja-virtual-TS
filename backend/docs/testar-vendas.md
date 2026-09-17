@@ -174,3 +174,47 @@ Foi criado um commit individual por arquivo novo. A integração em `app.ts` e o
 Na lista ou nos detalhes, use **Marcar como pago** após receber. A confirmação é idempotente e não altera estoque. Apenas vendas pendentes podem ser editadas. Vendas pendentes ou pagas podem ser canceladas, devolvendo estoque uma única vez. Canceladas não podem ser pagas.
 
 Na inicialização, registros antigos `concluida` passam a `pendente`, pois não havia confirmação de pagamento; `cancelada` passa a `cancelado`. O dashboard soma apenas vendas pagas.
+
+
+## Itens avulsos, comentários e parcelamento
+
+Na etapa de produtos, use **Item avulso** para informar descrição, preço unitário e quantidade sem cadastrar no catálogo. É possível misturar itens avulsos e produtos cadastrados; somente estes movimentam estoque.
+
+Na revisão, informe comentários (até 2.000 caracteres), entrada já recebida e, opcionalmente, de 1 a 120 parcelas mensais com o primeiro vencimento. O saldo é dividido em centavos; meses mais curtos usam seu último dia. Zero parcelas mantém o saldo sem agenda de vencimentos.
+
+Nos detalhes, registre o valor de cada recebimento. A venda permanece pendente até a quitação. Os recebimentos posteriores à entrada abatem as parcelas mais antigas primeiro. Comentários podem ser editados em vendas pendentes ou pagas. Itens e cliente ficam bloqueados após receber pagamentos ou criar parcelas.
+
+Cancelar preserva o histórico de recebimentos e devolve somente o estoque de produtos cadastrados. Não realiza estorno financeiro; eventual devolução é acertada fora do sistema.
+
+### API
+
+POST /vendas aceita, por exemplo:
+
+```json
+{
+  "cliente_id": 1,
+  "comentarios": "Entregar na próxima compra",
+  "entrada": 20,
+  "parcelamento": { "quantidade": 3, "primeiro_vencimento": "2026-10-15" },
+  "itens": [{ "descricao": "Produto do ciclo", "valor_unitario": 50, "quantidade": 2 }]
+}
+```
+
+PATCH /vendas/:id/pagar com {"valor": 15} registra um recebimento parcial. Sem valor, quita o saldo (compatibilidade com o fluxo anterior). GET /vendas/:id retorna comentários, pagamentos, parcelas, valor_pago e saldo.
+
+### Atualização do banco
+
+A migração local é automática ao iniciar. Antes de publicar esta versão na Vercel, execute `npm run preparar:turso` no ambiente configurado para o banco correto. A versão esperada passa a ser `asr_schema_v3_vendas`. A migração preserva IDs, itens e vendas existentes, permite produto_id nulo nos itens avulsos e registra a quitação das vendas antigas com status pago. Não executamos migrações no banco de produção durante o desenvolvimento.
+
+
+## Exclusão com confirmação e senha
+
+Em clientes, produtos, usuários e empresas, abra **Editar → Excluir**. Nas vendas, abra os detalhes e **Editar venda → Excluir permanentemente**. A confirmação identifica o registro, descreve o alcance e exige a senha atual de quem está conectado; senha incorreta mantém o diálogo aberto e não encerra a sessão.
+
+- Clientes, produtos e usuários vinculados a vendas não podem ser apagados. É possível inativá-los pelo status na edição para manter o histórico.
+- Usuários só podem ser excluídos por administradores ou gerentes. O último administrador ativo não pode ser excluído individualmente.
+- Empresas só podem ser excluídas pelo superadmin, com a senha dele. A confirmação informa que todos os cadastros, vendas, parcelas e pagamentos daquela empresa serão apagados. A operação é atômica.
+- Excluir uma venda apaga seus itens, parcelas e pagamentos e devolve o estoque apenas se a venda não estava cancelada. Não realiza estorno financeiro.
+- Cancelar uma venda fica dentro da edição, também exige senha e preserva o histórico.
+
+A exclusão permanente usa `DELETE /:entidade/:id/excluir`, com `{"senha_atual":"senha de quem está conectado"}` no corpo JSON. Entidades: clientes, produtos, usuarios, empresas e vendas. As rotas anteriores `DELETE /:entidade/:id` continuam inativando/cancelando e agora também exigem `senha_atual`. A aplicação não persiste a senha no armazenamento do navegador nem a devolve pela API.

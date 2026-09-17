@@ -1,3 +1,5 @@
+import { confirmarSenha } from "../../middleware/confirmarSenha.middleware.js";
+import { excluirController } from "../../exclusao/excluir.controller.js";
 import express from "express";
 
 import { autenticarSuperAdmin } from "../../middleware/autenticacao.middleware.js";
@@ -24,6 +26,8 @@ rotasEmpresas.post("/", criarEmpresaController);
 
 rotasEmpresas.patch("/:id", alterarEmpresaController);
 
-rotasEmpresas.delete("/:id", inativarEmpresaController);
+rotasEmpresas.delete("/:id", confirmarSenha, inativarEmpresaController);
+
+rotasEmpresas.delete("/:id/excluir", confirmarSenha, excluirController("empresas"));
 
 export default rotasEmpresas;

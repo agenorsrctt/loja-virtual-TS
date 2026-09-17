@@ -2,7 +2,7 @@ import type { AlterarVendaDTO } from "../dtos/venda.dto.js";
 
 import { alterarVendaRepository } from "../repositories/alterarVenda.repository.js";
 
-import { validarIdVenda, validarDadosVenda, validarItensVenda } from "../utils/validarVenda.util.js";
+import { validarCondicoes, validarIdVenda, validarDadosVenda, validarItensVenda } from "../utils/validarVenda.util.js";
 
 import { ErroVenda } from "../utils/erroVenda.util.js";
 
@@ -15,8 +15,9 @@ export async function alterarVendaService(dados: AlterarVendaDTO, empresa_id: nu
     validarIdVenda(id, "Venda");
 
     validarDadosVenda(dados);
+    validarCondicoes(dados);
 
-    if (dados.cliente_id === undefined && dados.itens === undefined) {
+    if (dados.cliente_id === undefined && dados.itens === undefined && dados.comentarios === undefined) {
 
         throw new ErroVenda("Informe ao menos um campo para alterar.", 400);
 

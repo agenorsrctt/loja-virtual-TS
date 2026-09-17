@@ -1,3 +1,5 @@
+import { confirmarSenha } from "../../middleware/confirmarSenha.middleware.js";
+import { excluirController } from "../../exclusao/excluir.controller.js";
 ﻿import express from "express";
 
 import { autenticar } from "../../middleware/autenticacao.middleware.js";
@@ -24,6 +26,8 @@ produtoRouter.post("/", criarProdutoController);
 
 produtoRouter.patch("/:id", alterarProdutoController);
 
-produtoRouter.delete("/:id", inativarProdutoController);
+produtoRouter.delete("/:id", confirmarSenha, inativarProdutoController);
+
+produtoRouter.delete("/:id/excluir", confirmarSenha, excluirController("produtos"));
 
 export default produtoRouter;

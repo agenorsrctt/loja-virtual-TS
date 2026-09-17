@@ -2,7 +2,7 @@ import type { CriarVendaDTO } from "../dtos/venda.dto.js";
 
 import { criarVendaRepository } from "../repositories/criarVenda.repository.js";
 
-import { validarIdVenda, validarDadosVenda, validarItensVenda } from "../utils/validarVenda.util.js";
+import { validarCondicoes, validarIdVenda, validarDadosVenda, validarItensVenda } from "../utils/validarVenda.util.js";
 
 export async function criarVendaService(dados: CriarVendaDTO, empresa_id: number, usuario_id: number) {
 
@@ -11,6 +11,7 @@ export async function criarVendaService(dados: CriarVendaDTO, empresa_id: number
     validarIdVenda(usuario_id, "Usuário");
 
     validarDadosVenda(dados);
+    validarCondicoes(dados);
 
     validarIdVenda(dados.cliente_id, "Cliente");
 

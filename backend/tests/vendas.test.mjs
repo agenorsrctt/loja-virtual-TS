@@ -186,11 +186,12 @@ test("vendas e itens vendidos: integração HTTP e transações isoladas", async
 
         const tabelas = [...init.matchAll(/executarSQL\(db, `(CREATE TABLE[\s\S]*?)`\)/g)];
 
-        assert.equal(tabelas.length, 7);
+        assert.equal(tabelas.length, 9);
 
         for (const [, sql] of tabelas) {
 
-            await executar(sql);
+            // Exercita a migração a partir da estrutura anterior, também no adaptador Turso.
+            await executar(sql.replace("        comentarios TEXT NOT NULL DEFAULT '',\n", '').replace('        produto_id INTEGER,\n        descricao TEXT,', '        produto_id INTEGER NOT NULL,'));
 
         }
 
@@ -208,11 +209,18 @@ test("vendas e itens vendidos: integração HTTP e transações isoladas", async
 
         await migracao.namespace.migrarAcesso();
 
+        const migracaoCondicoes = await carregar(path.join(raiz, "src/database/migrarCondicoesVenda.ts"));
+        await migracaoCondicoes.evaluate();
+        await migracaoCondicoes.namespace.migrarCondicoesVenda();
+        await migracaoCondicoes.namespace.migrarCondicoesVenda();
+        const hashExclusao = await require('bcrypt').hash('senha de exclusao', 4);
+        await executar('UPDATE USUARIOS SET senha = ?', [hashExclusao]);
+        await executar("INSERT INTO SUPER_ADMIN(id, email, senha) VALUES(1, 'dono@exclusao.test', ?)", [hashExclusao]);
         const app = express();
 
         app.use(express.json());
 
-        for (const [rota, arquivo] of [["/vendas", "vendas/routes/vendas.routes.ts"], ["/itens-vendidos", "itens_vendidos/routes/itensVendidos.routes.ts"], ["/produtos", "produtos/routes/produtos.routes.ts"]]) {
+        for (const [rota, arquivo] of [["/vendas", "vendas/routes/vendas.routes.ts"], ["/itens-vendidos", "itens_vendidos/routes/itensVendidos.routes.ts"], ["/produtos", "produtos/routes/produtos.routes.ts"], ["/clientes", "clientes/routes/clientes.routes.ts"], ["/usuarios", "usuarios/routes/usuarios.routes.ts"], ["/empresas", "empresas/routes/empresas.routes.ts"]]) {
 
             const modulo = await carregar(path.join(raiz, "src/modules", arquivo));
 
@@ -230,13 +238,14 @@ test("vendas e itens vendidos: integração HTTP e transações isoladas", async
 
         const base = `http://127.0.0.1:${servidor.address().port}`;
 
-        async function requisitar(metodo, rota, dados, empresa = 1) {
+        async function requisitar(metodo, rota, dados, empresa = 1, senhaPadrao = true) {
 
+            if (senhaPadrao && metodo === 'DELETE' && !rota.endsWith('/excluir')) dados = {...(dados || {}), senha_atual: 'senha de exclusao'};
             const headers = { "Content-Type": "application/json" };
 
             if (empresa) {
 
-                headers.Authorization = "Bearer " + jwt.sign({ id: empresa, empresa_id: empresa, email: "teste@teste.com", tipo: "admin", escopo: "empresa", finalidade: "acesso", versao_token: 0 }, process.env.JWT_SECRET, { expiresIn: "1h" });
+                headers.Authorization = "Bearer " + jwt.sign({ id: empresa === 'superadmin' ? 1 : empresa, empresa_id: empresa, email: "teste@teste.com", tipo: "admin", escopo: empresa === "superadmin" ? "superadmin" : "empresa", finalidade: "acesso", versao_token: 0 }, process.env.JWT_SECRET, { expiresIn: "1h" });
 
             }
 
@@ -496,6 +505,143 @@ test("vendas e itens vendidos: integração HTTP e transações isoladas", async
 
         });
 
+        await t.test("itens avulsos, entrada, parcelas e recebimentos parciais", async () => {
+            const produtos = await buscar("SELECT COUNT(*) AS n FROM PRODUTOS");
+            const criada = await requisitar("POST", "/vendas", { cliente_id: 1, comentarios: 'Entregar no próximo ciclo', entrada: 10,
+                parcelamento: { quantidade: 3, primeiro_vencimento: '2026-01-31' },
+                itens: [{ descricao: 'Produto exclusivo', valor_unitario: 50.01, quantidade: 2 }] });
+            assert.equal(criada.status, 201);
+            const v = criada.corpo.dados;
+            assert.equal(v.itens[0].produto_id, null);
+            assert.equal(v.itens[0].descricao, 'Produto exclusivo');
+            assert.equal(v.valor_total, 100.02);
+            assert.equal(v.valor_pago, 10);
+            assert.equal(v.saldo, 90.02);
+            assert.deepEqual(v.parcelas.map(p => p.valor), [30.01, 30.01, 30]);
+            assert.deepEqual(v.parcelas.map(p => p.vencimento), ['2026-01-31', '2026-02-28', '2026-03-31']);
+            assert.deepEqual(await buscar("SELECT COUNT(*) AS n FROM PRODUTOS"), produtos);
+            const rota = '/vendas/' + v.id;
+            assert.equal((await requisitar('PATCH', rota + '/pagar', {valor: 1}, 2)).status, 404);
+            assert.equal((await requisitar('PATCH', rota + '/pagar', {valor: 100})).status, 400);
+            for (const valor of [0, -1, 1.001, '5']) assert.equal((await requisitar('PATCH', rota + '/pagar', {valor})).status, 400);
+            const parcial = (await requisitar('PATCH', rota + '/pagar', {valor: 15})).corpo.dados;
+            assert.equal(parcial.status, 'pendente');
+            assert.equal(parcial.valor_pago, 25);
+            assert.equal(parcial.saldo, 75.02);
+            assert.equal(parcial.parcelas[0].saldo, 15.01);
+            assert.equal(parcial.parcelas[1].saldo, 30.01);
+            const listada = (await requisitar('GET', '/vendas')).corpo.dados.find(x => x.id === v.id);
+            assert.equal(listada.valor_pago, 25);
+            assert.equal(listada.saldo, 75.02);
+            assert.equal(listada.pagamentos.length, 2);
+            assert.ok(!(await requisitar('GET', '/vendas', undefined, 2)).corpo.dados.some(x => x.id === v.id));
+            assert.equal((await requisitar('PATCH', rota, {itens: [{descricao: 'Outro', valor_unitario: 1, quantidade: 1}]})).status, 409);
+            assert.equal((await requisitar('PATCH', rota, {comentarios: 'Novo comentário'})).corpo.dados.comentarios, 'Novo comentário');
+            const paga = (await requisitar('PATCH', rota + '/pagar', {valor: 75.02})).corpo.dados;
+            assert.equal(paga.status, 'pago');
+            assert.equal(paga.saldo, 0);
+            assert.ok(paga.parcelas.every(p => p.saldo === 0));
+            assert.equal(paga.pagamentos.length, 3);
+            assert.equal((await requisitar('PATCH', rota + '/pagar')).corpo.dados.pagamentos.length, 3);
+            assert.equal((await requisitar('DELETE', rota)).corpo.dados.status, 'cancelado');
+            assert.equal((await requisitar('GET', rota)).corpo.dados.pagamentos.length, 3);
+        });
+        await t.test("validações e rollback de condições de venda", async () => {
+            const base = {cliente_id: 1, itens: [{descricao: 'Avulso', valor_unitario: 10, quantidade: 1}]};
+            const antes = await buscar('SELECT COUNT(*) AS n FROM VENDAS');
+            for (const extra of [{entrada: 11}, {entrada: -1}, {comentarios: 123}, {comentarios: 'x'.repeat(2001)},
+                {parcelamento: {quantidade: 0, primeiro_vencimento: '2026-01-01'}},
+                {parcelamento: {quantidade: 2, primeiro_vencimento: '2026-02-30'}},
+                {entrada: 10, parcelamento: {quantidade: 2, primeiro_vencimento: '2026-01-01'}},
+                {itens: [{descricao: '', valor_unitario: 1, quantidade: 1}]},
+                {itens: [{descricao: 'A', valor_unitario: 0.001, quantidade: 1}]}]) {
+                assert.equal((await requisitar('POST', '/vendas', {...base, ...extra})).status, 400);
+            }
+            assert.deepEqual(await buscar('SELECT COUNT(*) AS n FROM VENDAS'), antes);
+            const criada = (await requisitar('POST', '/vendas', base)).corpo.dados;
+            const rota = '/vendas/' + criada.id;
+            const resultados = await Promise.all([requisitar('PATCH', rota + '/pagar', {valor: 7}), requisitar('PATCH', rota + '/pagar', {valor: 7})]);
+            assert.deepEqual(resultados.map(r => r.status).sort(), [200, 400]);
+            assert.equal((await requisitar('GET', rota)).corpo.dados.saldo, 3);
+            const quitada = (await requisitar('POST', '/vendas', {...base, entrada: 10})).corpo.dados;
+            assert.equal(quitada.status, 'pago');
+            assert.equal(quitada.saldo, 0);
+        });
+
+        await t.test("migração preserva itens históricos e reconhece vendas antigas pagas", async () => {
+            await executar("DELETE FROM MIGRACOES WHERE nome = 'asr_schema_v3_vendas'");
+            await executar("INSERT INTO VENDAS(empresa_id, usuario_id, cliente_id, valor_total, status) VALUES(1, 1, 1, 12.34, 'pago')");
+            const antiga = await buscar('SELECT MAX(id) AS id FROM VENDAS');
+            await executar('INSERT INTO ITENS_VENDIDOS(venda_id, produto_id, empresa_id, valor_vendido, quantidade) VALUES(?, 1, 1, 12.34, 1)', [antiga.id]);
+            await migracaoCondicoes.namespace.migrarCondicoesVenda();
+            await migracaoCondicoes.namespace.migrarCondicoesVenda();
+            const v = (await requisitar('GET', '/vendas/' + antiga.id)).corpo.dados;
+            assert.equal(v.valor_pago, 12.34);
+            assert.equal(v.saldo, 0);
+            assert.equal(v.pagamentos.length, 1);
+            assert.equal(v.itens[0].valor_vendido, 12.34);
+        });
+        await t.test("exclusão exige senha do ator, respeita vínculos e isola empresas", async () => {
+            const senha = {senha_atual: 'senha de exclusao'};
+            for (const rota of ['/clientes/1/excluir', '/produtos/1/excluir', '/usuarios/1/excluir', '/vendas/1/excluir']) {
+                assert.equal((await requisitar('DELETE', rota)).status, 400);
+                assert.equal((await requisitar('DELETE', rota, {senha_atual: 'incorreta'})).status, 403);
+                assert.equal((await requisitar('DELETE', rota, senha, 0)).status, 401);
+                assert.equal((await requisitar('DELETE', rota, senha, 2)).status, 404);
+            }
+            for (const rota of ['/clientes/1', '/produtos/1', '/usuarios/1', '/vendas/1']) {
+                assert.equal((await requisitar('DELETE', rota, {}, 1, false)).status, 400);
+                assert.equal((await requisitar('DELETE', rota, {senha_atual: 'errada'}, 1, false)).status, 403);
+            }
+            assert.equal((await requisitar('DELETE', '/empresas/1', {}, 'superadmin', false)).status, 400);
+            assert.equal((await requisitar('DELETE', '/empresas/1/excluir', senha)).status, 403);
+            assert.equal((await requisitar('DELETE', '/empresas/1/excluir', {}, 'superadmin')).status, 400);
+            assert.equal((await requisitar('DELETE', '/empresas/1/excluir', {senha_atual: 'incorreta'}, 'superadmin')).status, 403);
+            for (const rota of ['/clientes/1/excluir', '/produtos/1/excluir', '/usuarios/1/excluir']) assert.equal((await requisitar('DELETE', rota, senha)).status, 409);
+            await executar("INSERT INTO CLIENTES(id, empresa_id, nome, telefone, status) VALUES(80, 1, 'Excluir', 'excluir', 'ativo')");
+            await executar("INSERT INTO PRODUTOS(id, empresa_id, produto, estoque, preco, status) VALUES(80, 1, 'Excluir', 0, 1, 'ativo')");
+            await executar("INSERT INTO USUARIOS(id, empresa_id, nome, tipo, email, status, senha) VALUES(80, 1, 'Excluir', 'colaborador', 'excluir@teste', 'ativo', 'hash do alvo')");
+            for (const [entidade, tabela] of [['clientes','CLIENTES'],['produtos','PRODUTOS'],['usuarios','USUARIOS']]) {
+                assert.equal((await requisitar('DELETE', '/' + entidade + '/80/excluir', senha)).status, 200);
+                assert.equal(await buscar('SELECT id FROM ' + tabela + ' WHERE id = 80'), undefined);
+                assert.equal((await requisitar('DELETE', '/' + entidade + '/80/excluir', senha)).status, 404);
+            }
+            assert.equal((await requisitar('DELETE', '/usuarios/2/excluir', senha, 2)).status, 409);
+            await executar("UPDATE USUARIOS SET tipo = 'colaborador' WHERE id = 2");
+            assert.equal((await requisitar('DELETE', '/usuarios/2/excluir', senha, 2)).status, 403);
+            await executar("UPDATE USUARIOS SET tipo = 'admin' WHERE id = 2");
+        });
+        await t.test("exclusão de venda limpa parcelas e pagamentos e devolve estoque uma vez", async () => {
+            const senha = {senha_atual: 'senha de exclusao'};
+            const estoque = (await buscar('SELECT estoque FROM PRODUTOS WHERE id = 1')).estoque;
+            const criada = (await requisitar('POST', '/vendas', {cliente_id: 1, entrada: 1, parcelamento: {quantidade: 2, primeiro_vencimento: '2026-10-10'}, itens: [{produto_id: 1, quantidade: 1}, {descricao:'Avulso', quantidade:1, valor_unitario:10}]})).corpo.dados;
+            const rota = '/vendas/' + criada.id + '/excluir';
+            const respostas = await Promise.all([requisitar('DELETE', rota, senha), requisitar('DELETE', rota, senha)]);
+            assert.deepEqual(respostas.map(r => r.status).sort(), [200,404]);
+            assert.equal((await buscar('SELECT estoque FROM PRODUTOS WHERE id = 1')).estoque, estoque);
+            for (const tabela of ['PARCELAS','PAGAMENTOS','ITENS_VENDIDOS']) assert.equal((await buscar('SELECT COUNT(*) AS n FROM ' + tabela + ' WHERE venda_id = ?', [criada.id])).n, 0);
+            const cancelada = (await requisitar('POST', '/vendas', {cliente_id: 1, itens: [{produto_id:1, quantidade:1}]})).corpo.dados;
+            await requisitar('DELETE', '/vendas/' + cancelada.id);
+            assert.equal((await requisitar('DELETE', '/vendas/' + cancelada.id + '/excluir', senha)).status, 200);
+            assert.equal((await buscar('SELECT estoque FROM PRODUTOS WHERE id = 1')).estoque, estoque);
+        });
+        await t.test("exclusão de empresa é atômica e não remove dados de outras empresas", async () => {
+            const senha = {senha_atual: 'senha de exclusao'};
+            const criada = await requisitar('POST', '/vendas', {cliente_id:2, entrada:1, parcelamento:{quantidade:1, primeiro_vencimento:'2026-10-10'}, itens:[{produto_id:3, quantidade:2}]}, 2);
+            assert.equal(criada.status, 201);
+            const antes = await buscar('SELECT COUNT(*) AS n FROM VENDAS WHERE empresa_id = 1');
+            await executar("CREATE TRIGGER impedir_exclusao BEFORE DELETE ON EMPRESAS WHEN OLD.id = 2 BEGIN SELECT RAISE(ABORT, 'falha simulada'); END");
+            const log = console.error;
+            try {
+                console.error = () => {};
+                assert.equal((await requisitar('DELETE', '/empresas/2/excluir', senha, 'superadmin')).status, 500);
+            } finally { console.error = log; await executar('DROP TRIGGER impedir_exclusao'); }
+            assert.ok(await buscar('SELECT id FROM VENDAS WHERE id = ?', [criada.corpo.dados.id]));
+            assert.equal((await requisitar('DELETE', '/empresas/2/excluir', senha, 'superadmin')).status, 200);
+            for (const tabela of ['PARCELAS','PAGAMENTOS','ITENS_VENDIDOS','VENDAS','USUARIOS','PRODUTOS','CLIENTES']) assert.equal((await buscar('SELECT COUNT(*) AS n FROM ' + tabela + ' WHERE empresa_id = 2')).n, 0);
+            assert.equal(await buscar('SELECT id FROM EMPRESAS WHERE id = 2'), undefined);
+            assert.deepEqual(await buscar('SELECT COUNT(*) AS n FROM VENDAS WHERE empresa_id = 1'), antes);
+        });
         await t.test("migração converte status antigos e pode ser repetida", async () => {
 
             await executar("UPDATE VENDAS SET status = 'concluida' WHERE id = ?", [venda.id]);

@@ -22,7 +22,7 @@ async function carregar() {
 
     const cliente = (await api('/clientes/' + venda.cliente_id)).dados;
 
-    document.querySelector('#comprovante').innerHTML = `<div class="sucesso-circulo">${icone('check')}</div><span class="sobretitulo">MAIS UMA CONQUISTA</span><h1>Venda realizada!</h1><p class="muted">Venda pendente de pagamento. Seu estoque já foi atualizado.</p><div class="resumo-sucesso"><strong>Venda #${id}</strong><p>${esc(cliente.nome)}</p><b>${dinheiro(venda.valor_total)}</b><small>${dataHora(venda.data)}</small></div><a class="botao largo" href="../nova-venda/nova-venda.html">Fazer uma nova venda ${icone('mais')}</a><a class="botao fantasma largo" href="../detalhes-venda/detalhes-venda.html?id=${id}">Ver detalhes da venda →</a>`;
+    document.querySelector('#comprovante').innerHTML = `<div class="sucesso-circulo">${icone('check')}</div><span class="sobretitulo">MAIS UMA CONQUISTA</span><h1>Venda realizada!</h1><p class="muted">Venda registrada. Saldo a receber: ${dinheiro(venda.saldo)}.</p><div class="resumo-sucesso"><strong>Venda #${id}</strong><p>${esc(cliente.nome)}</p><b>${dinheiro(venda.valor_total)}</b><small>Recebido: ${dinheiro(venda.valor_pago)} · ${venda.parcelas.length ? venda.parcelas.length + ' parcela(s)' : 'Sem parcelamento'}</small><small>${dataHora(venda.data)}</small></div><a class="botao largo" href="../nova-venda/nova-venda.html">Fazer uma nova venda ${icone('mais')}</a><a class="botao fantasma largo" href="../detalhes-venda/detalhes-venda.html?id=${id}">Ver detalhes da venda →</a>`;
 
 }
 

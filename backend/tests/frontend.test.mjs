@@ -16,7 +16,7 @@ import express from 'express';
 
 import { runInNewContext } from 'node:vm';
 
-import { esc, dinheiro, dataVenda, etiqueta } from '../../frontend/compartilhado/interface.js';
+import { esc, dinheiro, dataVenda, etiqueta, confirmarComSenha } from '../../frontend/compartilhado/interface.js';
 
 import { api, salvarSessao, registros, protegerPagina } from '../../frontend/compartilhado/api.js';
 
@@ -415,4 +415,66 @@ test('PWA não intercepta API nem escritas e oferece fallback para navegação o
 
     assert.equal(worker.armazenados.size, 4);
 
+});
+
+
+test('confirmação com senha permite desistir, trata erro e impede envio duplicado', async () => {
+    const anterior = globalThis.document;
+    let dialogo;
+    globalThis.document = {
+        body: { append() {} },
+        createElement() {
+            const eventos = {};
+            const campo = { value: '', focus() {} };
+            const voltar = {};
+            const confirmar = {};
+            const form = {};
+            const erro = {};
+            dialogo = {
+                campo, voltar, form, erro, eventos, removido: false,
+                setAttribute() {}, showModal() {},
+                addEventListener(nome, acao) { eventos[nome] = acao; },
+                querySelector(seletor) { return ({input:campo, '[data-voltar]':voltar, form, '[data-erro]':erro})[seletor]; },
+                querySelectorAll() { return [voltar, confirmar]; },
+                close() { eventos.close(); },
+                remove() { this.removido = true; },
+            };
+            return dialogo;
+        },
+    };
+    try {
+        let chamadas = 0;
+        const cancelado = confirmarComSenha('Excluir?', 'Confirma?', () => { chamadas++; });
+        dialogo.campo.value = 'senha não enviada';
+        dialogo.voltar.onclick();
+        assert.equal(await cancelado, false);
+        assert.equal(chamadas, 0);
+        assert.equal(dialogo.campo.value, '');
+        let liberar;
+        const resultado = confirmarComSenha('Excluir <script>?', 'Confirma?', async senha => {
+            chamadas++;
+            assert.equal(senha, chamadas === 1 ? 'errada' : 'correta');
+            if (chamadas === 1) throw new Error('Senha incorreta.');
+            await new Promise(resolve => { liberar = resolve; });
+        });
+        assert.ok(!dialogo.innerHTML.includes('<script>'));
+        dialogo.campo.value = 'errada';
+        await dialogo.form.onsubmit({preventDefault() {}});
+        assert.equal(dialogo.removido, false);
+        assert.equal(dialogo.erro.textContent, 'Senha incorreta.');
+        assert.equal(dialogo.campo.value, '');
+        dialogo.campo.value = 'correta';
+        const envio = dialogo.form.onsubmit({preventDefault() {}});
+        await dialogo.form.onsubmit({preventDefault() {}});
+        assert.equal(chamadas, 2);
+        assert.equal(dialogo.voltar.disabled, true);
+        let bloqueado = false;
+        dialogo.eventos.cancel({preventDefault() { bloqueado = true; }});
+        assert.equal(bloqueado, true);
+        liberar();
+        await envio;
+        assert.equal(await resultado, true);
+        assert.equal(dialogo.campo.value, '');
+        assert.equal(dialogo.removido, true);
+    } finally { globalThis.document = anterior; }
 });

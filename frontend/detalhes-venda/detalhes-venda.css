@@ -1,3 +1,5 @@
 #detalhes .linha > strong { white-space: nowrap; }
 
 #detalhes .cabecalho-pagina .etiqueta { padding: 8px 13px; }
+
+.financeiro-venda{margin-top:24px}#detalhes textarea,#valor-pagamento{width:100%;padding:12px;border:1px solid #b8c3d4;border-radius:8px;font:inherit}#detalhes textarea{resize:vertical}

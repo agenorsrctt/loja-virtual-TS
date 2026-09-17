@@ -186,7 +186,7 @@ test("superAdmin e primeiro acesso: fluxo HTTP completo", async (t) => {
 
         const tabelas = [...init.matchAll(/executarSQL\(db, `(CREATE TABLE[\s\S]*?)`\)/g)];
 
-        assert.equal(tabelas.length, 7);
+        assert.equal(tabelas.length, 9);
 
         for (const [, sql] of tabelas) {
 

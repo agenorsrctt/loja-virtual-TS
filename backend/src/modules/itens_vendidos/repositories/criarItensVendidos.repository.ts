@@ -11,6 +11,15 @@ export async function criarItensVendidosRepository(conexao: ConexaoBanco, itens:
     let totalCentavos = 0;
 
     for (const item of itens) {
+        if (item.produto_id == null) {
+            const centavos = Math.round(item.valor_unitario! * 100);
+            const subtotal = centavos * item.quantidade;
+            if (!Number.isSafeInteger(subtotal) || !Number.isSafeInteger(totalCentavos + subtotal)) throw new ErroVenda("Total inválido.", 400);
+            await executarSQL(conexao, "INSERT INTO ITENS_VENDIDOS(venda_id, empresa_id, descricao, valor_vendido, quantidade) VALUES(?, ?, ?, ?, ?)",
+                [venda_id, empresa_id, item.descricao!.trim(), centavos / 100, item.quantidade]);
+            totalCentavos += subtotal;
+            continue;
+        }
 
         const produto = await buscarSQL<{ preco: number; estoque: number; status: string }>(conexao,
             "SELECT preco, estoque, status FROM PRODUTOS WHERE empresa_id = ? AND id = ?", [empresa_id, item.produto_id]);

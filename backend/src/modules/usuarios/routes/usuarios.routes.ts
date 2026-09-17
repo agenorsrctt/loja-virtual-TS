@@ -1,3 +1,5 @@
+import { confirmarSenha } from "../../middleware/confirmarSenha.middleware.js";
+import { excluirController } from "../../exclusao/excluir.controller.js";
 import { primeiroAcessoController } from "../../acesso/controllers/acesso.controller.js";
 
 import { perfilEmpresaController, alterarSenhaEmpresaController } from "../../acesso/controllers/perfil.controller.js";
@@ -35,6 +37,8 @@ routerUsuario.post("/", autenticar, criarUsuarioController);
 
 routerUsuario.patch("/:id", autenticar, alterarUsuarioController);
 
-routerUsuario.delete("/:id", autenticar, inativarUsuarioController);
+routerUsuario.delete("/:id", autenticar, confirmarSenha, inativarUsuarioController);
+
+routerUsuario.delete("/:id/excluir", autenticar, confirmarSenha, excluirController("usuarios"));
 
 export default routerUsuario;

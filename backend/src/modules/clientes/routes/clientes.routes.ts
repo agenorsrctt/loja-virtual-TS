@@ -1,3 +1,5 @@
+import { confirmarSenha } from "../../middleware/confirmarSenha.middleware.js";
+import { excluirController } from "../../exclusao/excluir.controller.js";
 import express from "express";
 
 import { autenticar } from "../../middleware/autenticacao.middleware.js";
@@ -24,6 +26,8 @@ rotasClientes.post("/", criarClienteController);
 
 rotasClientes.patch("/:id", alterarClienteController);
 
-rotasClientes.delete("/:id", inativarClienteController);
+rotasClientes.delete("/:id", confirmarSenha, inativarClienteController);
+
+rotasClientes.delete("/:id/excluir", confirmarSenha, excluirController("clientes"));
 
 export default rotasClientes;

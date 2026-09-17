@@ -1,6 +1,8 @@
 export interface CriarItemVendidoDTO {
 
-    produto_id: number;
+    produto_id?: number | null;
+    descricao?: string;
+    valor_unitario?: number;
 
     quantidade: number;
 
