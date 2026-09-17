@@ -5,7 +5,7 @@ import { fileURLToPath } from "node:url";
 
 import express from 'express';
 
-import { bancoPronto } from './database/init.js';
+import { garantirBancoPronto } from './database/init.js';
 
 import rotasEmpresas from './modules/empresas/routes/empresas.routes.js';
 
@@ -45,7 +45,7 @@ app.use(async (_req, res, proximo) => {
 
     try {
 
-        await bancoPronto;
+        await garantirBancoPronto();
 
         proximo();
 

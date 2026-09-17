@@ -1,12 +1,23 @@
 import db from "./connection.js";
-
 import { prepararBanco, verificarBanco } from "./esquema.js";
 
-// Na Vercel, a inicialização apenas confere a versão. Migrações são executadas
-// explicitamente antes da publicação, sem DDL a cada nova instância da API.
-export const bancoPronto = process.env.VERCEL ? verificarBanco() : prepararBanco();
+// Na Vercel apenas consulta a versão; migrações continuam sendo explícitas.
+export let bancoPronto = process.env.VERCEL ? verificarBanco() : prepararBanco();
+let proximaTentativa = Infinity;
+function observarFalha() {
+    bancoPronto.catch(() => { proximaTentativa = Date.now() + 5000; });
+}
+observarFalha();
 
-// A API retorna 503 se a inicialização falhar, sem rejeição não observada.
-bancoPronto.catch(() => {});
+// Uma instância que iniciou antes da migração pode se recuperar sem reinício.
+// Requisições simultâneas compartilham a verificação; falhas têm intervalo mínimo.
+export function garantirBancoPronto(): Promise<void> {
+    if (process.env.VERCEL && Date.now() >= proximaTentativa) {
+        proximaTentativa = Infinity;
+        bancoPronto = verificarBanco();
+        observarFalha();
+    }
+    return bancoPronto;
+}
 
 export default db;

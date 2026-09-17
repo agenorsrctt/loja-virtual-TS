@@ -78,3 +78,41 @@ test('modo local abre SQLite com integridade referencial ativada', () => {
         }
     `, { SQLITE_PATH: ':memory:' });
 });
+
+
+test('API se recupera após migração e compartilha tentativas com intervalo mínimo', () => {
+    executar(bloquearSqlite + `
+        import assert from 'node:assert/strict';
+        const { clienteTurso } = await import('./src/database/turso.ts');
+        const cliente = clienteTurso();
+        let consultas = 0;
+        let atualizado = false;
+        let agora = 10000;
+        const relogio = Date.now;
+        Date.now = () => agora;
+        cliente.execute = async () => {
+            consultas++;
+            return { rows: atualizado ? [{nome:'asr_schema_v3_vendas'}] : [] };
+        };
+        try {
+            const { bancoPronto, garantirBancoPronto } = await import('./src/database/init.ts');
+            await assert.rejects(bancoPronto);
+            await assert.rejects(garantirBancoPronto());
+            assert.equal(consultas, 1);
+            agora += 5000;
+            const falha = garantirBancoPronto();
+            assert.equal(garantirBancoPronto(), falha);
+            await assert.rejects(falha);
+            assert.equal(consultas, 2);
+            atualizado = true;
+            agora += 5000;
+            const recuperacao = garantirBancoPronto();
+            assert.equal(garantirBancoPronto(), recuperacao);
+            await recuperacao;
+            assert.equal(consultas, 3);
+            agora += 60000;
+            await garantirBancoPronto();
+            assert.equal(consultas, 3);
+        } finally { Date.now = relogio; cliente.close(); }
+    `, { VERCEL: '1', TURSO_DATABASE_URL: 'libsql://teste.invalid', TURSO_AUTH_TOKEN: 'token-de-teste' });
+});
